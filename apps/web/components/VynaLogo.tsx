@@ -10,26 +10,25 @@ interface VynaLogoProps {
   showTagline?: boolean;
 }
 
-/** Mark: an "O" ring (the flat) with a dot sitting on it (the person sharing it). */
+/** Mark: a house outline (the shared home) with a coral dot at its centre (the person sharing it). */
 export default function VynaLogo({ variant = "horizontal", theme = "light", size = 34, className = "", showTagline = false }: VynaLogoProps) {
   const onDark = theme === "dark";
-  const word = onDark ? "#FFFFFF" : "#14213D";
+  const ink = onDark ? "#FFFFFF" : "#14213D";
 
   const Mark = (
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden className="shrink-0">
-      <rect width="40" height="40" rx="12" fill={onDark ? "#FFFFFF" : "#14213D"} />
-      <circle cx="20" cy="20" r="9" stroke={onDark ? "#14213D" : "#FFFFFF"} strokeWidth="4" />
-      <circle cx="27.4" cy="12.6" r="4.2" fill="#F2594A" stroke={onDark ? "#FFFFFF" : "#14213D"} strokeWidth="2" />
+      <path d="M5.5 18.5 20 5.5l14.5 13V31a4 4 0 0 1-4 4h-21a4 4 0 0 1-4-4V18.5Z" stroke={ink} strokeWidth="4" strokeLinejoin="round" />
+      <circle cx="20" cy="23.5" r="5" fill="#F2594A" />
     </svg>
   );
 
   if (variant !== "horizontal") return <div className={`inline-flex ${className}`}>{Mark}</div>;
 
   return (
-    <div className={`inline-flex items-center gap-2.5 ${className}`}>
+    <div className={`inline-flex items-center gap-3 ${className}`}>
       {Mark}
       <div className="flex flex-col leading-none">
-        <span style={{ color: word, fontSize: size * 0.58 }} className="font-display font-extrabold tracking-[0.14em]">VYNA</span>
+        <span style={{ color: ink, fontSize: size * 0.62 }} className="font-display font-semibold tracking-[0.22em]">VYNA</span>
         {showTagline && <span className="text-[10px] text-mist-dark mt-1 tracking-wide">Everything shared. Everything simple.</span>}
       </div>
     </div>
