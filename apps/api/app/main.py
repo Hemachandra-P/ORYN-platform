@@ -137,7 +137,10 @@ def on_startup():
             ("currency_symbol", "₹", "Platform currency symbol"),
             ("moving_out_sales_enabled", "true", "Enable moving out collections"),
             ("ai_provider_mode", settings.AI_PROVIDER, "Active AI processing engine"),
-            ("payment_gateway_mode", "test_simulation" if settings.RAZORPAY_KEY_ID.startswith("rzp_test_nestsync_mock") else "live", "Razorpay integration mode")
+            ("payment_gateway_mode", "test_simulation" if settings.RAZORPAY_KEY_ID.startswith("rzp_test_nestsync_mock") else "live", "Razorpay integration mode"),
+            ("marketplace_fee_enabled", "true", "Enable transaction fee on marketplace sales"),
+            ("marketplace_fee_amount_paise", "2000", "Default marketplace platform fee in paise (2000 = ₹20.00)"),
+            ("marketplace_fee_policy", "seller_fee", "Marketplace fee policy: seller_fee, buyer_fee, both_fee, combined_fee")
         ]
         for key, val, desc in default_settings:
             existing_setting = db.query(PlatformSetting).filter(PlatformSetting.key == key).first()

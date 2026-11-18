@@ -72,7 +72,13 @@ export default function MarketplacePage() {
               <p className="text-sm text-mutedblue mt-1">Verified student & flatmate pre-owned furniture, cycles, and electronics.</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <Link
+                href="/marketplace/my-listings"
+                className="px-4 py-2.5 rounded-xl bg-navy-secondary hover:bg-navy-secondary/80 text-white text-xs font-bold border border-white/10 flex items-center gap-1.5 transition-colors"
+              >
+                <Tag className="w-3.5 h-3.5 text-coral" /> My Listings
+              </Link>
               <Link
                 href="/marketplace/moving-out"
                 className="px-4 py-2.5 rounded-xl bg-navy-secondary hover:bg-navy-secondary/80 text-white text-xs font-bold border border-white/10 flex items-center gap-1.5 transition-colors"

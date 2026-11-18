@@ -11,9 +11,13 @@ class AdminOverviewMetrics(BaseModel):
     total_listings: int
     active_listings: int
     sold_listings: int
+    deleted_listings: int
     total_subscriptions: int
     active_premium_subscribers: int
     verified_subscription_revenue_paise: int
+    total_completed_marketplace_transactions: int
+    marketplace_fees_collected_paise: int
+    pending_marketplace_payments_count: int
     failed_payments_count: int
     reported_listings_count: int
     pending_complaints_count: int

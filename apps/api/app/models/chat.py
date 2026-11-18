@@ -15,7 +15,7 @@ class Conversation(Base):
     last_message_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    listing = relationship("MarketplaceListing")
+    listing = relationship("MarketplaceListing", back_populates="conversations")
     buyer = relationship("User", foreign_keys=[buyer_id])
     seller = relationship("User", foreign_keys=[seller_id])
     messages = relationship("ChatMessage", back_populates="conversation", cascade="all, delete-orphan", order_by="ChatMessage.created_at")

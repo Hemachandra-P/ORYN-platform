@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { 
   Home, ShoppingBag, ShieldCheck, CreditCard, Sparkles, 
-  Bell, LogOut, User as UserIcon, Menu, X, ArrowRight
+  Bell, LogOut, User as UserIcon, Menu, X, ArrowRight, Tag
 } from "lucide-react";
 import { getStoredToken, getStoredUser, removeStoredToken } from "@/lib/api";
 
@@ -28,6 +28,7 @@ export default function Navbar() {
   const navLinks = [
     { name: "Household Hub", href: "/households", icon: Home },
     { name: "Marketplace", href: "/marketplace", icon: ShoppingBag },
+    ...(user ? [{ name: "My Listings", href: "/marketplace/my-listings", icon: Tag }] : []),
     { name: "Moving Out Sales", href: "/marketplace/moving-out", icon: Sparkles },
     { name: "Subscriptions", href: "/subscriptions", icon: CreditCard },
   ];

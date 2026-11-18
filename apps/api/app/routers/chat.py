@@ -67,6 +67,19 @@ def send_message(
         conversation = query.first()
 
         if not conversation:
+            if msg_in.listing_id:
+                listing = db.query(MarketplaceListing).filter(MarketplaceListing.id == msg_in.listing_id).first()
+                if listing and listing.status == "sold":
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="This item has been marked as SOLD and is no longer accepting new purchase enquiries."
+                    )
+                if listing and listing.status == "deleted":
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="This listing has been deleted and cannot receive new enquiries."
+                    )
+
             conversation = Conversation(
                 buyer_id=current_user.id,
                 seller_id=msg_in.recipient_id,
