@@ -233,39 +233,23 @@ def join_household_by_code_and_password(
             detail=capacity["limit_reached_message"]
         )
 
-    # If password is used, owner approval / pending join request can be created, or direct join if verified
-    # Per Prompt Feature 4: "Create a pending join request. Notify owner. Owner approves or rejects."
-    existing_req = db.query(HouseholdInvitation).filter(
+    # A valid invitation code (and joining password, when the flat has one) is enough:
+    # the user becomes a member straight away.
+    db.add(HouseholdMember(household_id=household.id, user_id=current_user.id, role="member"))
+
+    # Close any pending request this user had for the same flat.
+    db.query(HouseholdInvitation).filter(
         HouseholdInvitation.household_id == household.id,
         HouseholdInvitation.invitee_id == current_user.id,
         HouseholdInvitation.status == "pending"
-    ).first()
+    ).update({"status": "accepted"})
 
-    if existing_req:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You already have a pending join request for this household. Waiting for owner approval."
-        )
-
-    join_req = HouseholdInvitation(
-        household_id=household.id,
-        inviter_id=household.owner_id,
-        invitee_id=current_user.id,
-        type="join_request",
-        invite_token=uuid.uuid4().hex,
-        status="pending",
-        expires_at=datetime.utcnow() + timedelta(days=7)
-    )
-    db.add(join_req)
-
-    # Activity log
-    act = HouseholdActivityLog(
+    db.add(HouseholdActivityLog(
         household_id=household.id,
         user_id=current_user.id,
-        action_type="join_request_created",
-        description=f"{current_user.full_name} submitted a join request for the household"
-    )
-    db.add(act)
+        action_type="member_joined",
+        description=f"{current_user.full_name} joined the household with the invitation code"
+    ))
     db.commit()
 
     res = HouseholdResponse.model_validate(household)

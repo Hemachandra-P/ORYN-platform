@@ -47,11 +47,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillQuickLogin = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-  };
-
   return (
     <div className="min-h-screen bg-paper flex flex-col">
       <Navbar />
@@ -116,52 +111,6 @@ export default function LoginPage() {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Quick Demo Logins for Instant Testing */}
-          <div className="mt-8 pt-6 border-t border-paper">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-mist-dark text-center mb-3">
-              Fast Demo Accounts (Click to Autofill)
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillQuickLogin("rahul@example.com", "Pass@1234")}
-                className="p-2 rounded-xl bg-paper/60 hover:bg-paper border border-navy/10 text-left text-xs transition-colors"
-              >
-                <p className="font-bold text-navy truncate">Rahul (Flat Owner)</p>
-                <p className="text-[10px] text-mist-dark">rahul@example.com</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillQuickLogin("admin@nestsync.com", "Admin@NestSync2026!")}
-                className="p-2 rounded-xl bg-navy text-white text-left text-xs transition-colors hover:bg-navy-secondary"
-              >
-                <p className="font-bold text-coral truncate flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3" /> Super Admin
-                </p>
-                <p className="text-[10px] text-mist">admin@nestsync.com</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillQuickLogin("joy@example.com", "Pass@1234")}
-                className="p-2 rounded-xl bg-paper/60 hover:bg-paper border border-navy/10 text-left text-xs transition-colors"
-              >
-                <p className="font-bold text-navy truncate">Joy (Flatmate)</p>
-                <p className="text-[10px] text-mist-dark">joy@example.com</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillQuickLogin("arjun@example.com", "Pass@1234")}
-                className="p-2 rounded-xl bg-paper/60 hover:bg-paper border border-navy/10 text-left text-xs transition-colors"
-              >
-                <p className="font-bold text-navy truncate">Arjun (Flatmate)</p>
-                <p className="text-[10px] text-mist-dark">arjun@example.com</p>
-              </button>
-            </div>
-          </div>
 
           <div className="mt-6 text-center text-xs text-navy-secondary">
             Don&apos;t have an account?{" "}

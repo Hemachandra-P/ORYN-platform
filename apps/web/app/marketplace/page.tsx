@@ -148,9 +148,19 @@ export default function MarketplacePage() {
         ) : listings.length === 0 ? (
           <div className="mt-4 text-center py-20 bg-white rounded-2xl border border-navy/10">
             <ShoppingBag className="w-10 h-10 mx-auto text-mist" />
-            <h3 className="mt-4 font-display font-bold text-xl">Nothing matches those filters</h3>
-            <p className="mt-1 text-sm text-navy-secondary">Try a different word, or clear the filters to see everything.</p>
-            <button onClick={clearAll} className="mt-5 px-5 py-2.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-coral">Clear filters</button>
+            {filtersActive ? (
+              <>
+                <h3 className="mt-4 font-display font-bold text-xl">Nothing matches those filters</h3>
+                <p className="mt-1 text-sm text-navy-secondary">Try a different word, or clear the filters to see everything.</p>
+                <button onClick={clearAll} className="mt-5 px-5 py-2.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-coral">Clear filters</button>
+              </>
+            ) : (
+              <>
+                <h3 className="mt-4 font-display font-bold text-xl">No listings yet</h3>
+                <p className="mt-1 text-sm text-navy-secondary">Be the first to list something you no longer need.</p>
+                <Link href="/marketplace/sell" className="inline-block mt-5 px-5 py-2.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-coral">Sell an item</Link>
+              </>
+            )}
           </div>
         ) : (
           <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

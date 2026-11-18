@@ -206,8 +206,9 @@ export default function HouseholdHubPage() {
       setShowJoinModal(false);
       setJoinCode("");
       setJoinPassword("");
-      showToast("Join request submitted / Joined successfully!");
+      showToast(`You joined ${res.full_identity || res.name}`);
       await loadHouseholds();
+      selectHousehold(res);
     } catch (err: any) {
       showToast(err.message || "Failed to join household");
     }
@@ -579,35 +580,31 @@ export default function HouseholdHubPage() {
         </div>
       )}
 
-      {/* EMPTY / ONBOARDING UPGRADE STATE IF NO ACTIVE HOUSEHOLD */}
+      {/* NO FLAT YET: join with a code, or start one */}
       {!activeHousehold && (
-        <div className="max-w-3xl mx-auto my-12 p-8 bg-white rounded-2xl shadow-card border border-navy/10 text-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-coral/10 text-coral flex items-center justify-center mx-auto">
-            <Building className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold text-navy">Welcome to Household Hub</h2>
-          <p className="text-xs sm:text-sm text-navy-secondary max-w-lg mx-auto leading-relaxed">
-            Free Plan accounts can browse the community marketplace. To create a household, split bills, and manage tasks with flatmates, upgrade to <strong>Basic Plus (₹49/year)</strong> or <strong>Premium Household (₹99/6 months)</strong>.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-            <Link
-              href="/subscriptions"
-              className="px-6 py-3 rounded-2xl bg-coral hover:bg-coral-hover text-white text-xs font-bold  transition-all flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4" /> View Subscription Plans
-            </Link>
-            <button
-              onClick={() => setShowJoinModal(true)}
-              className="px-5 py-3 rounded-2xl bg-paper hover:bg-navy/10 text-navy text-xs font-bold border border-navy/15 transition-all flex items-center gap-1.5"
-            >
-              <KeyRound className="w-3.5 h-3.5" /> Join Flat with Code
-            </button>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-5 py-3 rounded-2xl bg-navy hover:bg-navy-secondary text-white text-xs font-bold transition-all flex items-center gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" /> Create New Flat
-            </button>
+        <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-14 page-enter">
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-navy">
+            You are not in a flat yet{currentUser?.full_name ? `, ${currentUser.full_name.split(" ")[0]}` : ""}
+          </h2>
+          <p className="mt-3 text-navy-secondary max-w-xl">Ask a flatmate for their flat code to join them, or start a flat of your own.</p>
+
+          <div className="mt-8 grid sm:grid-cols-2 gap-4">
+            <div className="bg-white rounded-2xl border border-navy/10 p-6 flex flex-col">
+              <div className="w-10 h-10 rounded-xl bg-paper border border-navy/10 flex items-center justify-center"><KeyRound className="w-5 h-5" /></div>
+              <h3 className="mt-4 font-display font-bold text-xl">Join with a flat code</h3>
+              <p className="mt-1.5 text-sm text-navy-secondary flex-1">Enter the code your flatmate shared, for example SYNC-A1B2C3. You join straight away, and it is free.</p>
+              <button onClick={() => setShowJoinModal(true)} className="mt-5 px-5 py-3 rounded-xl bg-navy text-white text-sm font-semibold hover:bg-coral">Enter flat code</button>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-navy/10 p-6 flex flex-col">
+              <div className="w-10 h-10 rounded-xl bg-paper border border-navy/10 flex items-center justify-center"><Plus className="w-5 h-5" /></div>
+              <h3 className="mt-4 font-display font-bold text-xl">Start a new flat</h3>
+              <p className="mt-1.5 text-sm text-navy-secondary flex-1">Create the flat and share its code with flatmates. Up to 3 people can live in a free flat. Premium removes the limit.</p>
+              <div className="mt-5 flex items-center gap-3">
+                <button onClick={() => setShowCreateModal(true)} className="px-5 py-3 rounded-xl border border-navy/15 text-sm font-semibold hover:border-navy/40">Create a flat</button>
+                <Link href="/subscriptions" className="text-sm font-semibold text-coral hover:underline">See plans</Link>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1108,7 +1105,7 @@ export default function HouseholdHubPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-navy mb-1">Joining Password (if required)</label>
+                <label className="block text-xs font-bold text-navy mb-1">Joining password <span className="font-normal text-mist-dark">(only if the flat has one)</span></label>
                 <input
                   type="password"
                   value={joinPassword}
@@ -1130,7 +1127,7 @@ export default function HouseholdHubPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold "
                 >
-                  Submit Request
+                  Join flat
                 </button>
               </div>
             </form>
@@ -1154,7 +1151,7 @@ export default function HouseholdHubPage() {
                   required
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="e.g. priya@example.com"
+                  placeholder="flatmate@email.com"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-xs text-navy focus:border-coral focus:outline-none"
                 />
               </div>

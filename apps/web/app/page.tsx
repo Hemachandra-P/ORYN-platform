@@ -7,13 +7,13 @@ import { ArrowRight, Check, Receipt, ListChecks, Store } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import OrynLogo from "@/components/OrynLogo";
 import Reveal from "@/components/Reveal";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, getStoredToken } from "@/lib/api";
 
 /* ------------------------------------------------------------------ */
 /* Hero signature: a shared bill that splits itself across the flat.   */
 /* ------------------------------------------------------------------ */
 
-const FLATMATES = ["Rahul", "Joy", "Arjun", "Priya", "Meera", "Kabir"];
+const FLATMATES = ["Joy", "Rohan", "Karthik", "Bharath", "Tarun", "Kedhar"];
 const TOTAL = 1200;
 const SHARE = TOTAL / FLATMATES.length;
 const STEPS = FLATMATES.length * 2 + 3; // split, settle, hold
@@ -47,7 +47,7 @@ function FlatLedger() {
               <p className="text-sm text-mist-dark">Weekly groceries</p>
               <p className="font-mono text-3xl font-semibold tabular mt-1">₹{TOTAL.toLocaleString("en-IN")}.00</p>
             </div>
-            <p className="text-xs text-mist-dark text-right">Paid by <span className="font-semibold text-navy">Rahul</span><br />Split {FLATMATES.length} ways</p>
+            <p className="text-xs text-mist-dark text-right">Paid by <span className="font-semibold text-navy">{FLATMATES[0]}</span><br />Split {FLATMATES.length} ways</p>
           </div>
         </div>
 
@@ -85,7 +85,7 @@ function FlatLedger() {
         </ul>
 
         <div className="px-6 py-4 bg-paper border-t border-navy/10 flex items-center justify-between">
-          <span className="text-xs text-mist-dark">{allSettled ? "Everyone is square" : "Still owed to Rahul"}</span>
+          <span className="text-xs text-mist-dark">{allSettled ? "Everyone is square" : `Still owed to ${FLATMATES[0]}`}</span>
           <span className={`font-mono text-lg font-semibold tabular ${allSettled ? "text-mint" : "text-navy"}`}>
             {allSettled ? "₹0" : `₹${Math.round(owed).toLocaleString("en-IN")}`}
           </span>
@@ -100,7 +100,7 @@ function FlatLedger() {
         className="hidden sm:block absolute -left-12 -bottom-14 bg-sun rounded-lg px-4 py-3 shadow-card text-sm font-medium w-44"
       >
         <span className="block text-[10px] font-mono uppercase tracking-wider text-navy/60 mb-0.5">Sunday</span>
-        Joy · clean the stove
+        Karthik · clean the stove
       </motion.div>
     </div>
   );
@@ -116,6 +116,10 @@ const PLANS = [
 
 export default function LandingPage() {
   const [listings, setListings] = useState<any[]>([]);
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => { setSignedIn(!!getStoredToken()); }, []);
+  // Signed-in visitors go straight to their flats instead of the register page.
+  const startHref = signedIn ? "/households" : "/auth/register";
 
   useEffect(() => {
     apiRequest("/marketplace/?sort_by=newest")
@@ -142,8 +146,8 @@ export default function LandingPage() {
               Log who paid, split it to the paisa, hand out chores, and sell the mini-fridge when you move out. Everyone sees the same numbers.
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.6 }} className="mt-9 flex flex-col sm:flex-row gap-3">
-              <Link href="/auth/register" className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-navy text-white font-semibold hover:bg-coral shadow-card">
-                Create your household
+              <Link href={startHref} className="group inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-navy text-white font-semibold hover:bg-coral shadow-card">
+                {signedIn ? "Go to your household" : "Create your household"}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link href="/marketplace" className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl border border-navy/15 bg-white font-semibold hover:border-navy/40">
@@ -253,7 +257,7 @@ export default function LandingPage() {
                       <li key={pt} className="flex gap-2.5 text-sm"><Check className={`w-4 h-4 mt-0.5 shrink-0 ${p.featured ? "text-coral" : "text-mint"}`} />{pt}</li>
                     ))}
                   </ul>
-                  <Link href={p.href} className={`mt-8 text-center py-3 rounded-xl text-sm font-semibold ${p.featured ? "bg-coral text-white hover:bg-coral-hover" : "bg-navy text-white hover:bg-coral"}`}>{p.cta}</Link>
+                  <Link href={signedIn && p.href === "/auth/register" ? "/households" : p.href} className={`mt-8 text-center py-3 rounded-xl text-sm font-semibold ${p.featured ? "bg-coral text-white hover:bg-coral-hover" : "bg-navy text-white hover:bg-coral"}`}>{signedIn && p.href === "/auth/register" ? "Open your household" : p.cta}</Link>
                 </div>
               </Reveal>
             ))}
@@ -275,8 +279,8 @@ export default function LandingPage() {
       <section className="px-4 sm:px-6 lg:px-8 py-24 text-center">
         <Reveal>
           <h2 className="font-display font-extrabold text-4xl sm:text-5xl leading-tight max-w-2xl mx-auto">Stop keeping score in the group chat.</h2>
-          <Link href="/auth/register" className="group mt-9 inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-coral text-white font-semibold hover:bg-coral-hover shadow-card">
-            Create your household <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <Link href={startHref} className="group mt-9 inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-coral text-white font-semibold hover:bg-coral-hover shadow-card">
+            {signedIn ? "Go to your household" : "Create your household"} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </Reveal>
       </section>
