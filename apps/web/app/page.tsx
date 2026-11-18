@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import OrynLogo from "@/components/OrynLogo";
 import { 
   Users, Receipt, Sparkles, ShoppingBag, ArrowRight, CheckCircle2, 
   Shield, Zap, HeartHandshake, Mic, Bell, RefreshCw, ChevronRight
@@ -47,15 +48,21 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy/5 text-navy font-semibold text-xs tracking-wide uppercase mb-6 border border-navy/10">
             <span className="w-2 h-2 rounded-full bg-coral animate-ping"></span>
-            Built for Flats, Hostels, PGs & Shared Homes
+            ORYN Platform • Built for Shared Living &amp; Campus Communities
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-navy max-w-4xl mx-auto leading-tight">
-            Shared living, <span className="text-coral underline decoration-wavy decoration-2">stress-free</span> expenses & campus marketplace.
+          <div className="mb-3">
+            <span className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-widest text-navy uppercase font-sans">
+              ORYN
+            </span>
+          </div>
+
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-navy max-w-4xl mx-auto leading-tight">
+            Everything Shared. <span className="text-coral underline decoration-wavy decoration-2">Everything Simple.</span>
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-navy-secondary max-w-2xl mx-auto font-normal">
-            Track flatmate bills with penny-accurate splits, organize chores &amp; shared responsibilities, and buy or sell used furniture &amp; appliances in your community.
+          <p className="mt-6 text-lg sm:text-xl text-navy-secondary max-w-2xl mx-auto font-normal leading-relaxed">
+            One connected platform to manage shared living, organize household finances, and discover products within your community.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -63,7 +70,7 @@ export default function LandingPage() {
               href="/auth/register"
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-coral hover:bg-coral-hover text-white font-bold text-base shadow-elevated hover:shadow-lg transition-all flex items-center justify-center gap-2 group"
             >
-              Start Your Household Free
+              Get Started with ORYN
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
 
@@ -494,7 +501,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-3xl shadow-card border border-navy/5">
             <p className="text-sm text-navy-secondary italic">
-              &quot;In our flat of six, calculating who paid for milk and groceries used to cause weekly friction. With NestSync, we log it instantly and settle via UPI in seconds.&quot;
+              &quot;In our flat of six, calculating who paid for milk and groceries used to cause weekly friction. With ORYN, we log it instantly and settle via UPI in seconds.&quot;
             </p>
             <div className="mt-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-coral/20 font-bold text-coral flex items-center justify-center text-xs">
@@ -544,13 +551,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-coral flex items-center justify-center font-bold text-white text-sm">
-                N
-              </div>
-              <span className="font-bold text-lg text-white">Nest<span className="text-coral">Sync</span></span>
+              <OrynLogo variant="horizontal" size={30} />
             </div>
             <p className="text-xs text-mutedblue leading-relaxed">
-              Unified digital platform for modern shared living and community second-hand marketplaces.
+              Everything Shared. Everything Simple. One connected platform for shared living and community marketplaces.
             </p>
           </div>
           <div>
@@ -581,7 +585,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-mutedblue">
-          <p>© 2026 NestSync Platform. All rights reserved.</p>
+          <p>© 2026 ORYN. All rights reserved.</p>
           <p className="mt-2 sm:mt-0 font-mono text-[11px]">Primary Navy #14213D · Cream #F4EDE0 · Coral #FF6B5B</p>
         </div>
       </footer>

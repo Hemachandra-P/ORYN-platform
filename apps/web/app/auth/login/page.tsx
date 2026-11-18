@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import OrynLogo from "@/components/OrynLogo";
 import { apiRequest, setStoredToken, setStoredUser } from "@/lib/api";
 import { Lock, Mail, ArrowRight, ShieldCheck, User } from "lucide-react";
 
@@ -58,11 +59,11 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-elevated border border-navy/5 p-8 sm:p-10">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-navy text-coral font-black text-2xl flex items-center justify-center mx-auto mb-3">
-              N
+            <div className="flex justify-center mb-4">
+              <OrynLogo variant="symbol" size={48} />
             </div>
-            <h1 className="text-2xl font-bold text-navy">Welcome Back</h1>
-            <p className="text-sm text-navy-secondary mt-1">Sign in to your NestSync account</p>
+            <h1 className="text-2xl font-bold text-navy">Welcome to ORYN</h1>
+            <p className="text-sm text-navy-secondary mt-1">Sign in to your ORYN account</p>
           </div>
 
           {error && (

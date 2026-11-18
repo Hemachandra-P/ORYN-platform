@@ -52,11 +52,11 @@ class MarketplaceListingResponse(BaseModel):
     title: str
     category: str
     description: str
-    selling_price_paise: int
+    selling_price_paise: Optional[int] = None
     original_price_paise: Optional[int] = None
-    condition: str
-    location: str
-    city: str
+    condition: Optional[str] = None
+    location: Optional[str] = None
+    city: Optional[str] = None
     reason_for_selling: Optional[str] = None
     is_moving_out_sale: bool
     moving_out_collection_title: Optional[str] = None
@@ -69,6 +69,7 @@ class MarketplaceListingResponse(BaseModel):
     updated_at: datetime
     sold_at: Optional[datetime] = None
     enquiries_count: Optional[int] = 0
+    is_preview: bool = False
 
     class Config:
         from_attributes = True

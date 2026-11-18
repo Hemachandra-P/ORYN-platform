@@ -620,7 +620,7 @@ export default function SubscriptionsPage() {
           <div className="space-y-1 text-xs">
             <h4 className="font-bold text-navy">Server-Side Payment Verification &amp; Local Test Simulation</h4>
             <p className="text-navy-secondary leading-relaxed">
-              NestSync verifies every transaction cryptographically with HMAC-SHA256 signatures before activating subscriptions. In local development test mode, payment simulation generates realistic test keys and updates database subscription records without real money charges.
+              ORYN verifies every transaction cryptographically with HMAC-SHA256 signatures before activating subscriptions. In local development test mode, payment simulation generates realistic test keys and updates database subscription records without real money charges.
             </p>
           </div>
         </div>

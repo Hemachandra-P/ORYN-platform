@@ -1,6 +1,6 @@
-# NestSync — Unified Household Management & Community Marketplace Platform
+# ORYN — Everything Shared. Everything Simple.
 
-NestSync is a production-structured digital platform for flats, apartments, hostels, PGs, shared accommodations, and student households. It combines financial budgeting, collaborative chores, member management, and a community marketplace into one modern lifestyle product.
+**ORYN** is a production-structured digital platform for flats, apartments, hostels, PGs, shared accommodations, and student households. One connected platform to manage shared living, organize household finances, and discover products within your community.
 
 ---
 
@@ -36,19 +36,19 @@ D:\SRM_website/
 
 ## 💎 Consolidated Pricing & Features Architecture
 
-NestSync offers four distinct and clearly defined subscription offerings:
+ORYN offers four distinct and clearly defined subscription offerings:
 
 | Subscription | Price | Duration | Capacity | Primary Scope |
 |---|---:|---|---|---|
-| **Free Plan** | ₹0 | Forever | 1 individual user | Individual account & free marketplace browsing |
+| **Free Plan** | ₹0 | Forever | 1 individual user | Individual account & free marketplace preview browsing |
 | **Basic Plus** | ₹49 | 1 year | 3 total household members | Household creation, expense splits, bills & tasks |
 | **Premium Household** | ₹99 | 6 months | Unlimited household members | Advanced analytics, custom bills & unlimited flatmates |
-| **Marketplace Membership** | ₹20 | 6 months | Individual user access | Unlimited buying & selling on the marketplace |
+| **Marketplace Membership** | ₹20 | 6 months | Individual user access | Full product details, seller contact, unlimited buying & selling |
 
 ### 1. Plan 1 — Free Plan
 - **Price**: ₹0 — Free Forever
 - **Capacity**: 1 individual user only.
-- **Features**: Create account, log in, browse marketplace, view publicly available listings and product details.
+- **Features**: Create account, log in, browse marketplace in discovery preview mode.
 - **Restrictions**: Cannot create or join households; cannot split expenses, manage bills, create shared shopping lists, or assign chores.
 
 ### 2. Plan 2 — Basic Plus
@@ -62,10 +62,14 @@ NestSync offers four distinct and clearly defined subscription offerings:
 - **Features**: All Basic Plus features, unlimited members, only household owner pays ₹99 (flatmates join free), advanced expense analytics, unlimited custom bill categories, complete financial history.
 - **Graceful Expiration**: Existing members are never kicked out when expired; adding new members is restricted if the household exceeds basic capacity until renewal.
 
-### 4. Plan 4 — Marketplace Membership
+### 4. Plan 4 — Marketplace Membership & Preview Access Control
 - **Price**: ₹20 / 6 Months
-- **Scope**: Completely independent from household subscriptions.
-- **Features**: Browsing is always 100% free for everyone. Active membership unlocks unlimited buying and selling with zero per-listing charges and zero buyer fees.
+- **Discovery Catalogue (Free Users)**:
+  - Users without active membership see **limited product preview only**: cover photograph, title, short description, and seller name.
+  - Price badges, location labels, item condition, specifications, additional photos, and seller contacts are **strictly withheld on the backend** (`is_preview: true`).
+- **Full Member Access**:
+  - Active ₹20 6-month membership unlocks the complete product page, all photos, item condition, full specifications, exact campus location, direct seller messaging, and instant protected checkout.
+  - Unlimited listing publishing with zero per-listing charges and zero commission.
 
 ### 3. Community, Building, and Flat Hierarchy
 - Every household belongs to a structured geographic hierarchy:

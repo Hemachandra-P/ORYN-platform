@@ -440,7 +440,7 @@ export default function AdminPanelPage() {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = `nestsync-financial-report-${Date.now()}.json`;
+                    a.download = `oryn-financial-report-${Date.now()}.json`;
                     a.click();
                   }}
                   className="px-4 py-2 bg-navy hover:bg-navy-secondary text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5"

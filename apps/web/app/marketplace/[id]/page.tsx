@@ -7,7 +7,7 @@ import Navbar from "@/components/Navbar";
 import { 
   ArrowLeft, Heart, MessageSquare, MapPin, Tag, ShieldCheck, 
   Sparkles, CheckCircle2, User, Share2, Check, AlertCircle, 
-  Edit3, Trash2, ShoppingCart, RefreshCw
+  Edit3, Trash2, ShoppingCart, RefreshCw, Lock, Zap
 } from "lucide-react";
 import { apiRequest, getStoredToken, getStoredUser } from "@/lib/api";
 
@@ -36,6 +36,7 @@ export default function ProductDetailPage() {
   const [feeLoading, setFeeLoading] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState<any>(null);
+  const [unlocking, setUnlocking] = useState(false);
 
   useEffect(() => {
     setCurrentUser(getStoredUser());
@@ -136,6 +137,40 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleUnlockMembership = async () => {
+    const token = getStoredToken();
+    if (!token) {
+      router.push(`/auth/login?redirect=/marketplace/${listing.id}`);
+      return;
+    }
+    setUnlocking(true);
+    try {
+      const orderRes = await apiRequest("/subscriptions/marketplace-membership/checkout", {
+        method: "POST",
+      });
+
+      const simRes = await apiRequest(`/subscriptions/simulate-test-payment?order_id=${orderRes.order_id}`, {
+        method: "POST",
+      });
+
+      const verifyRes = await apiRequest("/subscriptions/marketplace-membership/verify", {
+        method: "POST",
+        body: JSON.stringify({
+          razorpay_order_id: orderRes.order_id,
+          razorpay_payment_id: simRes.razorpay_payment_id,
+          razorpay_signature: simRes.razorpay_signature,
+        }),
+      });
+
+      alert(verifyRes.message || "Marketplace Membership activated! Full product details unlocked.");
+      await loadListing(listing.id);
+    } catch (err: any) {
+      alert(err.message || "Failed to unlock marketplace membership");
+    } finally {
+      setUnlocking(false);
+    }
+  };
+
   const openCheckoutModal = async () => {
     const token = getStoredToken();
     if (!token) {
@@ -220,6 +255,7 @@ export default function ProductDetailPage() {
   }
 
   const isOwner = currentUser && currentUser.id === listing.seller_id;
+  const isPreview = listing.is_preview || (!isOwner && listing.selling_price_paise == null);
   const isSold = listing.status === "sold";
   const isDeleted = listing.status === "deleted";
 
@@ -281,223 +317,391 @@ export default function ProductDetailPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT: IMAGE GALLERY (7 cols) */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="bg-white rounded-3xl overflow-hidden shadow-card border border-navy/5 h-[420px] sm:h-[480px] relative">
-              {listing.images && listing.images.length > 0 ? (
-                <img
-                  src={listing.images[activeImageIdx]?.image_url || listing.images[0]?.image_url}
-                  alt={listing.title}
-                  className={`w-full h-full object-cover ${isSold ? "grayscale-[40%]" : ""}`}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-mutedblue text-sm">
-                  No Photograph Uploaded
-                </div>
-              )}
+        {isPreview ? (
+          /* PREVIEW ONLY VIEW WITH ATTRACTIVE LOCKED CONTENT SECTION */
+          <div className="space-y-8">
+            {/* Top Preview Banner */}
+            <div className="p-4 rounded-2xl bg-navy/5 border border-navy/10 flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-navy text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-coral" /> Product Preview Mode
+                </span>
+                <span className="text-xs text-navy-secondary">
+                  Showing public discovery preview. Full specifications, photos, and seller contacts require membership.
+                </span>
+              </div>
+              <button
+                onClick={handleUnlockMembership}
+                disabled={unlocking}
+                className="text-xs font-bold text-coral hover:underline flex items-center gap-1"
+              >
+                Unlock for ₹20 &rarr;
+              </button>
+            </div>
 
-              {/* OVERLAY BADGES */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                {isSold && (
-                  <span className="bg-amber-500 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow-lg tracking-wider">
-                    SOLD
+            {/* Product Limited Preview Card */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/5 grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+              {/* Main Product Image (1 image only) */}
+              <div className="md:col-span-5">
+                <div className="h-72 sm:h-80 rounded-2xl overflow-hidden bg-navy/5 relative">
+                  {listing.images && listing.images.length > 0 ? (
+                    <img
+                      src={listing.images[0]?.image_url}
+                      alt={listing.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-mutedblue text-sm">
+                      No Photo Available
+                    </div>
+                  )}
+                  <span className="absolute bottom-3 left-3 bg-navy/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                    <Lock className="w-3 h-3 text-coral" /> Preview Photo
                   </span>
-                )}
-                {listing.is_moving_out_sale && (
-                  <span className="bg-coral text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5" /> Moving Out / Graduation Sale
-                  </span>
-                )}
+                </div>
+              </div>
+
+              {/* Product Info (Limited to title, short description, seller name) */}
+              <div className="md:col-span-7 flex flex-col justify-between h-full space-y-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-coral">
+                      {listing.category || "Community Item"}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-cream text-[10px] font-bold text-navy flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5 text-navy/60" /> Details Protected
+                    </span>
+                  </div>
+
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-navy leading-tight mb-3">
+                    {listing.title}
+                  </h1>
+
+                  <div className="flex items-center gap-2 py-2 px-3 rounded-xl bg-cream/60 border border-navy/5 w-fit mb-4">
+                    <User className="w-4 h-4 text-coral" />
+                    <span className="text-xs text-navy-secondary">Listed by:</span>
+                    <span className="text-xs font-bold text-navy">
+                      {listing.seller?.full_name || "Community Seller"}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-navy-secondary leading-relaxed whitespace-pre-line">
+                    {listing.description}
+                  </p>
+                </div>
+
+                {/* Locked indicators */}
+                <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-navy-secondary">
+                    <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-coral" /> Selling Price</span>
+                    <span className="font-semibold text-navy">Locked for Members</span>
+                  </div>
+                  <div className="flex items-center justify-between text-navy-secondary">
+                    <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-coral" /> Item Condition & Specs</span>
+                    <span className="font-semibold text-navy">Locked for Members</span>
+                  </div>
+                  <div className="flex items-center justify-between text-navy-secondary">
+                    <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-coral" /> Location, Tower & Flat</span>
+                    <span className="font-semibold text-navy">Locked for Members</span>
+                  </div>
+                  <div className="flex items-center justify-between text-navy-secondary">
+                    <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-coral" /> Seller Contact & Instant Buy</span>
+                    <span className="font-semibold text-navy">Locked for Members</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Thumbnail selector */}
-            {listing.images && listing.images.length > 1 && (
-              <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                {listing.images.map((img: any, idx: number) => (
-                  <button
-                    key={img.id || idx}
-                    onClick={() => setActiveImageIdx(idx)}
-                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
-                      activeImageIdx === idx ? "border-coral scale-105 shadow-md" : "border-white/50 opacity-70"
-                    }`}
-                  >
-                    <img src={img.image_url} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            {/* LOCKED CONTENT / MEMBERSHIP UPGRADE SECTION */}
+            <div className="bg-navy text-white rounded-3xl p-8 sm:p-12 shadow-elevated border border-navy-secondary relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-coral/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
 
-          {/* RIGHT: DETAILS & ACTIONS (5 cols) */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-coral">
-                  {listing.category}
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-cream font-bold text-navy text-xs capitalize">
-                    {listing.condition?.replace("_", " ")}
-                  </span>
+              <div className="relative z-10 max-w-4xl">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-coral/20 text-coral text-xs font-bold uppercase tracking-wider mb-4">
+                  <Sparkles className="w-4 h-4" /> Unlock Full Product Details
+                </div>
+
+                <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
+                  Want to know more about this item?
+                </h2>
+                <p className="text-base text-cream/80 max-w-2xl leading-relaxed mb-8">
+                  Get six months of complete ORYN Marketplace access. Unlock full product specifications, seller contacts, verified campus locations, and direct buying & selling privileges.
+                </p>
+
+                {/* 10 Benefits Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+                  {[
+                    "View complete product details",
+                    "View all product photographs",
+                    "See product prices",
+                    "See product condition",
+                    "See product location",
+                    "Access full seller information",
+                    "Contact sellers directly",
+                    "Buy products with protected checkout",
+                    "Sell your own items (unlimited listings)",
+                    "Verified community access"
+                  ].map((benefit, i) => (
+                    <div key={i} className="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-coral shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium text-cream">{benefit}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Action Card */}
+                <div className="bg-white/10 border border-white/15 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 backdrop-blur-md">
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl sm:text-5xl font-black text-white">₹20</span>
+                      <span className="text-sm font-bold text-coral uppercase tracking-wider">/ 6 MONTHS</span>
+                    </div>
+                    <p className="text-xs text-cream/70 mt-1">
+                      Full marketplace membership. Valid for 180 days across all categories.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleUnlockMembership}
+                    disabled={unlocking}
+                    className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-coral hover:bg-coral-hover text-white font-extrabold text-sm sm:text-base shadow-lg transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                  >
+                    {unlocking ? (
+                      <>
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        Activating Membership...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-5 h-5" />
+                        Unlock Marketplace for ₹20
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* FULL MEMBER / SELLER DETAIL VIEW */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* LEFT: IMAGE GALLERY (7 cols) */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="bg-white rounded-3xl overflow-hidden shadow-card border border-navy/5 h-[420px] sm:h-[480px] relative">
+                {listing.images && listing.images.length > 0 ? (
+                  <img
+                    src={listing.images[activeImageIdx]?.image_url || listing.images[0]?.image_url}
+                    alt={listing.title}
+                    className={`w-full h-full object-cover ${isSold ? "grayscale-[40%]" : ""}`}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-mutedblue text-sm">
+                    No Photograph Uploaded
+                  </div>
+                )}
+
+                {/* OVERLAY BADGES */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
                   {isSold && (
-                    <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-600 font-extrabold text-[10px] uppercase">
+                    <span className="bg-amber-500 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow-lg tracking-wider">
                       SOLD
+                    </span>
+                  )}
+                  {listing.is_moving_out_sale && (
+                    <span className="bg-coral text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" /> Moving Out / Graduation Sale
                     </span>
                   )}
                 </div>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-navy leading-tight">
-                {listing.title}
-              </h1>
+              {/* Thumbnail selector */}
+              {listing.images && listing.images.length > 1 && (
+                <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                  {listing.images.map((img: any, idx: number) => (
+                    <button
+                      key={img.id || idx}
+                      onClick={() => setActiveImageIdx(idx)}
+                      className={`w-20 h-20 rounded-2xl overflow-hidden border-2 shrink-0 transition-all ${
+                        activeImageIdx === idx ? "border-coral scale-105 shadow-md" : "border-white/50 opacity-70"
+                      }`}
+                    >
+                      <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-              <div className="mt-4 flex items-baseline gap-3">
-                <span className="text-3xl sm:text-4xl font-black text-navy">
-                  ₹{(listing.selling_price_paise / 100).toLocaleString("en-IN")}
-                </span>
-                {listing.original_price_paise && (
-                  <span className="text-base text-mutedblue-dark line-through font-semibold">
-                    ₹{(listing.original_price_paise / 100).toLocaleString("en-IN")}
+            {/* RIGHT: DETAILS & ACTIONS (5 cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-coral">
+                    {listing.category}
                   </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full bg-cream font-bold text-navy text-xs capitalize">
+                      {listing.condition?.replace("_", " ")}
+                    </span>
+                    {isSold && (
+                      <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-600 font-extrabold text-[10px] uppercase">
+                        SOLD
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-navy leading-tight">
+                  {listing.title}
+                </h1>
+
+                <div className="mt-4 flex items-baseline gap-3">
+                  <span className="text-3xl sm:text-4xl font-black text-navy">
+                    ₹{(listing.selling_price_paise / 100).toLocaleString("en-IN")}
+                  </span>
+                  {listing.original_price_paise && (
+                    <span className="text-base text-mutedblue-dark line-through font-semibold">
+                      ₹{(listing.original_price_paise / 100).toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-xs text-mutedblue-dark flex items-center gap-1.5 mt-3">
+                  <MapPin className="w-3.5 h-3.5 text-coral shrink-0" />
+                  {listing.location}, {listing.city}
+                </p>
+
+                {listing.moving_out_collection_title && (
+                  <div className="mt-4 p-3 rounded-2xl bg-cream-light border border-coral/20 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-coral shrink-0" />
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-coral tracking-wider">Part of collection</p>
+                      <p className="text-xs font-bold text-navy">{listing.moving_out_collection_title}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* OWNER CONTROLS vs BUYER CONTROLS */}
+                {isOwner ? (
+                  <div className="mt-8 pt-6 border-t border-cream space-y-3">
+                    <p className="text-xs font-bold text-mutedblue-dark uppercase tracking-wider">
+                      Seller Listing Controls
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {!isSold ? (
+                        <button
+                          onClick={() => setShowMarkSoldModal(true)}
+                          className="py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <Check className="w-4 h-4" /> Mark as Sold
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleReactivate}
+                          className="py-3 px-4 rounded-2xl bg-navy hover:bg-navy-secondary text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <RefreshCw className="w-4 h-4" /> Reactivate
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setShowDeleteModal(true)}
+                        className="py-3 px-4 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs border border-red-200 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Trash2 className="w-4 h-4" /> Delete Listing
+                      </button>
+                    </div>
+                    <Link
+                      href={`/marketplace/my-listings?edit=${listing.id}`}
+                      className="block text-center py-2.5 rounded-xl border border-navy/15 text-navy font-bold text-xs hover:bg-cream transition-colors"
+                    >
+                      Edit Listing Details
+                    </Link>
+                  </div>
+                ) : (
+                  /* BUYER ACTIONS */
+                  <div className="mt-8 space-y-3">
+                    {isSold ? (
+                      <div className="p-4 rounded-2xl bg-cream border border-navy/10 text-center">
+                        <p className="text-xs font-bold text-navy">
+                          This item has been marked as SOLD
+                        </p>
+                        <p className="text-[11px] text-mutedblue-dark mt-1">
+                          New purchase enquiries and reservations are disabled for this item.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={openCheckoutModal}
+                            className="flex-1 py-3.5 rounded-2xl bg-coral hover:bg-coral-hover text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                          >
+                            <ShoppingCart className="w-4 h-4" /> Buy with Protected Checkout
+                          </button>
+
+                          <button
+                            onClick={handleToggleFavorite}
+                            className={`p-3.5 rounded-2xl border transition-colors ${
+                              isFavorite 
+                                ? "bg-coral-light border-coral text-coral" 
+                                : "bg-white border-navy/15 text-navy hover:bg-cream"
+                            }`}
+                          >
+                            <Heart className={`w-5 h-5 ${isFavorite ? "fill-coral" : ""}`} />
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => setShowChatModal(true)}
+                          className="w-full py-3 rounded-2xl bg-cream hover:bg-navy/10 text-navy font-bold text-xs border border-navy/15 transition-all flex items-center justify-center gap-2"
+                        >
+                          <MessageSquare className="w-4 h-4" /> Send Enquiry Message
+                        </button>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
 
-              <p className="text-xs text-mutedblue-dark flex items-center gap-1.5 mt-3">
-                <MapPin className="w-3.5 h-3.5 text-coral shrink-0" />
-                {listing.location}, {listing.city}
-              </p>
-
-              {listing.moving_out_collection_title && (
-                <div className="mt-4 p-3 rounded-2xl bg-cream-light border border-coral/20 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-coral shrink-0" />
+              {/* SELLER CARD */}
+              <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-mutedblue-dark mb-4">
+                  Seller Information
+                </h3>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-navy text-white font-bold text-base flex items-center justify-center">
+                    {listing.seller?.full_name?.slice(0, 2).toUpperCase() || "SE"}
+                  </div>
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-coral tracking-wider">Part of collection</p>
-                    <p className="text-xs font-bold text-navy">{listing.moving_out_collection_title}</p>
+                    <h4 className="font-bold text-base text-navy flex items-center gap-1.5">
+                      {listing.seller?.full_name || "Community Seller"}
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    </h4>
+                    <p className="text-xs text-mutedblue-dark">{listing.seller?.city || "Campus Area"}</p>
                   </div>
-                </div>
-              )}
-
-              {/* OWNER CONTROLS vs BUYER CONTROLS */}
-              {isOwner ? (
-                <div className="mt-8 pt-6 border-t border-cream space-y-3">
-                  <p className="text-xs font-bold text-mutedblue-dark uppercase tracking-wider">
-                    Seller Listing Controls
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {!isSold ? (
-                      <button
-                        onClick={() => setShowMarkSoldModal(true)}
-                        className="py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <Check className="w-4 h-4" /> Mark as Sold
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleReactivate}
-                        className="py-3 px-4 rounded-2xl bg-navy hover:bg-navy-secondary text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <RefreshCw className="w-4 h-4" /> Reactivate
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => setShowDeleteModal(true)}
-                      className="py-3 px-4 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 font-bold text-xs border border-red-200 transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Trash2 className="w-4 h-4" /> Delete Listing
-                    </button>
-                  </div>
-                  <Link
-                    href={`/marketplace/my-listings?edit=${listing.id}`}
-                    className="block text-center py-2.5 rounded-xl border border-navy/15 text-navy font-bold text-xs hover:bg-cream transition-colors"
-                  >
-                    Edit Listing Details
-                  </Link>
-                </div>
-              ) : (
-                /* BUYER ACTIONS */
-                <div className="mt-8 space-y-3">
-                  {isSold ? (
-                    <div className="p-4 rounded-2xl bg-cream border border-navy/10 text-center">
-                      <p className="text-xs font-bold text-navy">
-                        This item has been marked as SOLD
-                      </p>
-                      <p className="text-[11px] text-mutedblue-dark mt-1">
-                        New purchase enquiries and reservations are disabled for this item.
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={openCheckoutModal}
-                          className="flex-1 py-3.5 rounded-2xl bg-coral hover:bg-coral-hover text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
-                        >
-                          <ShoppingCart className="w-4 h-4" /> Buy with Protected Checkout
-                        </button>
-
-                        <button
-                          onClick={handleToggleFavorite}
-                          className={`p-3.5 rounded-2xl border transition-colors ${
-                            isFavorite 
-                              ? "bg-coral-light border-coral text-coral" 
-                              : "bg-white border-navy/15 text-navy hover:bg-cream"
-                          }`}
-                        >
-                          <Heart className={`w-5 h-5 ${isFavorite ? "fill-coral" : ""}`} />
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={() => setShowChatModal(true)}
-                        className="w-full py-3 rounded-2xl bg-cream hover:bg-navy/10 text-navy font-bold text-xs border border-navy/15 transition-all flex items-center justify-center gap-2"
-                      >
-                        <MessageSquare className="w-4 h-4" /> Send Enquiry Message
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* SELLER CARD */}
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-mutedblue-dark mb-4">
-                Seller Information
-              </h3>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-navy text-white font-bold text-base flex items-center justify-center">
-                  {listing.seller?.full_name?.slice(0, 2).toUpperCase() || "SE"}
-                </div>
-                <div>
-                  <h4 className="font-bold text-base text-navy flex items-center gap-1.5">
-                    {listing.seller?.full_name || "Community Seller"}
-                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  </h4>
-                  <p className="text-xs text-mutedblue-dark">{listing.seller?.city || "Campus Area"}</p>
                 </div>
               </div>
-            </div>
 
-            {/* DESCRIPTION */}
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-mutedblue-dark mb-3">
-                Item Description & Reason for Selling
-              </h3>
-              <p className="text-sm text-navy-secondary leading-relaxed whitespace-pre-line">
-                {listing.description}
-              </p>
-              {listing.reason_for_selling && (
-                <div className="mt-4 pt-4 border-t border-cream">
-                  <p className="text-xs font-bold text-navy">Reason for selling:</p>
-                  <p className="text-xs text-navy-secondary mt-0.5">{listing.reason_for_selling}</p>
-                </div>
-              )}
+              {/* DESCRIPTION */}
+              <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-mutedblue-dark mb-3">
+                  Item Description & Reason for Selling
+                </h3>
+                <p className="text-sm text-navy-secondary leading-relaxed whitespace-pre-line">
+                  {listing.description}
+                </p>
+                {listing.reason_for_selling && (
+                  <div className="mt-4 pt-4 border-t border-cream">
+                    <p className="text-xs font-bold text-navy">Reason for selling:</p>
+                    <p className="text-xs text-navy-secondary mt-0.5">{listing.reason_for_selling}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* MESSAGE SELLER MODAL */}

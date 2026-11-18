@@ -16,8 +16,9 @@ from app.core.payment_gateway import RazorpayService
 from app.core.marketplace_membership import check_marketplace_membership
 from app.schemas.marketplace import (
     MarketplaceListingCreate, MarketplaceListingUpdate, MarketplaceListingResponse,
-    MarketplaceListingStatusUpdate
+    MarketplaceListingStatusUpdate, ListingImageResponse
 )
+from app.schemas.auth import UserResponse
 
 router = APIRouter(prefix="/marketplace", tags=["Marketplace"])
 
@@ -25,14 +26,74 @@ router = APIRouter(prefix="/marketplace", tags=["Marketplace"])
 UPLOAD_DIR = Path("D:/SRM_website/apps/api/uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-def _populate_listing_response(l: MarketplaceListing, db: Session, user_fav_ids: set = None) -> MarketplaceListingResponse:
+def _populate_listing_response(
+    l: MarketplaceListing,
+    db: Session,
+    user_fav_ids: set = None,
+    viewer_has_membership: bool = False,
+    is_seller_or_admin: bool = False
+) -> MarketplaceListingResponse:
     enquiry_count = db.query(Conversation).filter(Conversation.listing_id == l.id).count()
     is_fav = (l.id in user_fav_ids) if user_fav_ids is not None else False
-    
-    res = MarketplaceListingResponse.model_validate(l)
-    res.enquiries_count = enquiry_count
-    res.is_favorite = is_fav
-    return res
+
+    can_view_full = viewer_has_membership or is_seller_or_admin
+
+    if can_view_full:
+        res = MarketplaceListingResponse.model_validate(l)
+        res.enquiries_count = enquiry_count
+        res.is_favorite = is_fav
+        res.is_preview = False
+        return res
+    else:
+        # Limited preview for users without active 6-month Marketplace Membership:
+        # Permitted: Cover photograph, Title, Short Description, Seller Display Name
+        # Restricted: Price, Location, Condition, Additional Photos, Private Profile/Contact
+        preview_images = [ListingImageResponse.model_validate(l.images[0])] if l.images else []
+
+        seller_preview = None
+        if l.seller:
+            seller_preview = UserResponse(
+                id=l.seller.id,
+                email=None,
+                full_name=l.seller.full_name,
+                phone_number=None,
+                city=None,
+                avatar_url=l.seller.avatar_url,
+                role=l.seller.role,
+                status=l.seller.status,
+                subscription_tier=l.seller.subscription_tier,
+                created_at=l.seller.created_at,
+                updated_at=l.seller.updated_at
+            )
+
+        short_desc = l.description[:140] + "..." if len(l.description) > 140 else l.description
+
+        return MarketplaceListingResponse(
+            id=l.id,
+            seller_id=l.seller_id,
+            seller=seller_preview,
+            title=l.title,
+            category=l.category,
+            description=short_desc,
+            selling_price_paise=None,
+            original_price_paise=None,
+            condition=None,
+            location=None,
+            city=None,
+            reason_for_selling=None,
+            is_moving_out_sale=l.is_moving_out_sale,
+            moving_out_collection_title=l.moving_out_collection_title,
+            status=l.status,
+            views_count=l.views_count,
+            contact_preference=l.contact_preference,
+            images=preview_images,
+            is_favorite=is_fav,
+            created_at=l.created_at,
+            updated_at=l.updated_at,
+            sold_at=l.sold_at,
+            enquiries_count=enquiry_count,
+            is_preview=True
+        )
 
 # -----------------------------------------------------------------
 # IMAGE UPLOAD (Supports up to 8 images, JPG/PNG/WebP, preview ready)
@@ -132,7 +193,7 @@ def create_listing(
 
     db.commit()
     db.refresh(listing)
-    return _populate_listing_response(listing, db)
+    return _populate_listing_response(listing, db, viewer_has_membership=True, is_seller_or_admin=True)
 
 @router.get("/", response_model=List[MarketplaceListingResponse])
 def browse_listings(
@@ -149,6 +210,7 @@ def browse_listings(
 ):
     """
     Every registered user and visitor can browse, search and view listings for free!
+    Free users receive limited product preview. Paid members (₹20 / 6 months) receive full details.
     """
     query = db.query(MarketplaceListing).filter(MarketplaceListing.status == "active")
 
@@ -184,11 +246,27 @@ def browse_listings(
     listings = query.limit(100).all()
 
     user_fav_ids = set()
+    has_mkt = False
+    is_admin = False
     if current_user:
         favs = db.query(ListingFavorite.listing_id).filter(ListingFavorite.user_id == current_user.id).all()
         user_fav_ids = {f[0] for f in favs}
+        is_admin = current_user.role in ["platform_admin", "super_admin"]
+        if is_admin:
+            has_mkt = True
+        else:
+            mkt_status = check_marketplace_membership(current_user.id, db)
+            has_mkt = mkt_status.get("has_active_membership", False)
 
-    return [_populate_listing_response(l, db, user_fav_ids) for l in listings]
+    results = []
+    for l in listings:
+        is_owner = (current_user is not None) and (current_user.id == l.seller_id)
+        results.append(_populate_listing_response(
+            l, db, user_fav_ids,
+            viewer_has_membership=has_mkt,
+            is_seller_or_admin=is_admin or is_owner
+        ))
+    return results
 
 @router.get("/my-listings", response_model=List[MarketplaceListingResponse])
 def get_my_listings(
@@ -206,7 +284,7 @@ def get_my_listings(
         query = query.filter(MarketplaceListing.status != "deleted")
 
     listings = query.order_by(desc(MarketplaceListing.created_at)).all()
-    return [_populate_listing_response(l, db) for l in listings]
+    return [_populate_listing_response(l, db, viewer_has_membership=True, is_seller_or_admin=True) for l in listings]
 
 @router.get("/{listing_id}", response_model=MarketplaceListingResponse)
 def get_listing_detail(
@@ -226,13 +304,26 @@ def get_listing_detail(
     db.commit()
 
     is_fav = False
+    has_mkt = False
+    is_admin_or_owner = False
     if current_user:
         is_fav = db.query(ListingFavorite).filter(
             ListingFavorite.listing_id == listing.id,
             ListingFavorite.user_id == current_user.id
         ).first() is not None
 
-    res = _populate_listing_response(listing, db)
+        is_admin_or_owner = (current_user.role in ["platform_admin", "super_admin"]) or (current_user.id == listing.seller_id)
+        if is_admin_or_owner:
+            has_mkt = True
+        else:
+            mkt_status = check_marketplace_membership(current_user.id, db)
+            has_mkt = mkt_status.get("has_active_membership", False)
+
+    res = _populate_listing_response(
+        listing, db,
+        viewer_has_membership=has_mkt,
+        is_seller_or_admin=is_admin_or_owner
+    )
     res.is_favorite = is_fav
     return res
 
@@ -260,7 +351,7 @@ def update_listing(
 
     db.commit()
     db.refresh(listing)
-    return _populate_listing_response(listing, db)
+    return _populate_listing_response(listing, db, viewer_has_membership=True, is_seller_or_admin=True)
 
 @router.delete("/{listing_id}")
 def delete_listing(
@@ -296,7 +387,7 @@ def mark_listing_as_sold(
     listing.sold_at = datetime.utcnow()
     db.commit()
     db.refresh(listing)
-    return _populate_listing_response(listing, db)
+    return _populate_listing_response(listing, db, viewer_has_membership=True, is_seller_or_admin=True)
 
 @router.post("/{listing_id}/reactivate", response_model=MarketplaceListingResponse)
 def reactivate_listing(
@@ -323,7 +414,7 @@ def reactivate_listing(
     listing.sold_at = None
     db.commit()
     db.refresh(listing)
-    return _populate_listing_response(listing, db)
+    return _populate_listing_response(listing, db, viewer_has_membership=True, is_seller_or_admin=True)
 
 @router.post("/{listing_id}/favorite")
 def toggle_favorite(

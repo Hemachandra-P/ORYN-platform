@@ -9,6 +9,7 @@ from app.models.marketplace import MarketplaceListing
 from app.models.chat import Conversation, ChatMessage
 from app.models.notification import Notification
 from app.core.deps import get_current_user
+from app.core.marketplace_membership import check_marketplace_membership
 from app.schemas.chat import (
     ChatMessageCreate, ChatMessageResponse, ConversationResponse
 )
@@ -68,6 +69,14 @@ def send_message(
 
         if not conversation:
             if msg_in.listing_id:
+                # Require active ₹20 6-Month Marketplace Membership to initiate buyer enquiries
+                mkt_status = check_marketplace_membership(current_user.id, db)
+                if not mkt_status["has_active_membership"] and current_user.role not in ["platform_admin", "super_admin"]:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Active Marketplace Membership required to contact sellers or send buying inquiries. Unlock 6 months for ₹20."
+                    )
+
                 listing = db.query(MarketplaceListing).filter(MarketplaceListing.id == msg_in.listing_id).first()
                 if listing and listing.status == "sold":
                     raise HTTPException(

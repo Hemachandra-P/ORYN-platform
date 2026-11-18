@@ -37,7 +37,7 @@ class ResetPasswordRequest(BaseModel):
 
 class UserResponse(BaseModel):
     id: str
-    email: str
+    email: Optional[str] = None
     full_name: str
     phone_number: Optional[str] = None
     city: Optional[str] = None

@@ -2,8 +2,13 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "NestSync — Unified Household Management & Community Marketplace",
-  description: "Digital platform for flats, PGs, shared accommodations and student households. Shared expenses, shopping lists, tasks, AI assistant and second-hand marketplace.",
+  title: "ORYN — Everything Shared. Everything Simple.",
+  description: "One connected platform to manage shared living, organize household finances, and discover products within your community.",
+  openGraph: {
+    title: "ORYN — Everything Shared. Everything Simple.",
+    description: "One connected platform to manage shared living, organize household finances, and discover products within your community.",
+    siteName: "ORYN",
+  },
 };
 
 export default function RootLayout({

@@ -8,6 +8,7 @@ import {
   Bell, LogOut, User as UserIcon, Menu, X, ArrowRight, Tag
 } from "lucide-react";
 import { getStoredToken, getStoredUser, removeStoredToken } from "@/lib/api";
+import OrynLogo from "@/components/OrynLogo";
 
 export default function Navbar() {
   const router = useRouter();
@@ -43,13 +44,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-coral flex items-center justify-center font-black text-white text-lg shadow-md group-hover:scale-105 transition-transform">
-                N
-              </div>
-              <span className="font-bold text-xl tracking-tight text-white flex items-center">
-                Nest<span className="text-coral">Sync</span>
-              </span>
+            <Link href="/" className="flex items-center group">
+              <OrynLogo variant="horizontal" size={34} />
             </Link>
           </div>
 

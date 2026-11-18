@@ -483,3 +483,89 @@ def test_task_assignment_to_flatmate():
         "assigned_to_id": "non_existent_or_external_id"
     })
     assert fail_task.status_code == 400
+
+def test_marketplace_preview_access_control():
+    # 1. Unauthenticated / Free user browses marketplace
+    res = client.get("/api/v1/marketplace/")
+    assert res.status_code == 200
+    listings = res.json()
+    assert len(listings) > 0
+    first_item = listings[0]
+    
+    # In preview mode, price, location, condition must be None, is_preview must be True
+    assert first_item["is_preview"] is True
+    assert first_item["selling_price_paise"] is None
+    assert first_item["location"] is None
+    assert first_item["condition"] is None
+    assert len(first_item["images"]) <= 1
+
+    # 2. Detail view for unauthenticated user
+    detail_res = client.get(f"/api/v1/marketplace/{first_item['id']}")
+    assert detail_res.status_code == 200
+    detail = detail_res.json()
+    assert detail["is_preview"] is True
+    assert detail["selling_price_paise"] is None
+    assert detail["location"] is None
+    assert detail["condition"] is None
+    assert detail["seller"]["email"] is None
+
+    # 3. Non-member trying to send message is rejected with 403
+    # Register/login a user without membership
+    free_email = f"preview_user_{int(datetime.utcnow().timestamp())}@test.com"
+    reg = client.post("/api/v1/auth/register", json={
+        "email": free_email,
+        "full_name": "Preview Buyer",
+        "phone": "+919876543299",
+        "password": "Pass@1234"
+    })
+    token = reg.json()["access_token"]
+    buyer_headers = {"Authorization": f"Bearer {token}"}
+
+    # Attempt to message seller
+    chat_res = client.post("/api/v1/chat/messages", headers=buyer_headers, json={
+        "recipient_id": detail["seller_id"],
+        "listing_id": detail["id"],
+        "content": "Can I buy this item?"
+    })
+    assert chat_res.status_code == 403
+    assert "Marketplace Membership required" in chat_res.json()["detail"]
+
+    # 4. Activate ₹20 Marketplace Membership for this user
+    checkout_res = client.post("/api/v1/subscriptions/marketplace-membership/checkout", headers=buyer_headers)
+    assert checkout_res.status_code == 200
+    order_id = checkout_res.json()["order_id"]
+
+    sim_res = client.post(f"/api/v1/subscriptions/simulate-test-payment?order_id={order_id}", headers=buyer_headers)
+    assert sim_res.status_code == 200
+    sim_data = sim_res.json()
+
+    verify_res = client.post("/api/v1/subscriptions/marketplace-membership/verify", headers=buyer_headers, json={
+        "razorpay_order_id": order_id,
+        "razorpay_payment_id": sim_data["razorpay_payment_id"],
+        "razorpay_signature": sim_data["razorpay_signature"]
+    })
+    assert verify_res.status_code == 200
+    assert verify_res.json()["status"] == "success"
+
+    # Verify membership endpoint returns active
+    mkt_status = client.get("/api/v1/subscriptions/marketplace-membership", headers=buyer_headers)
+    assert mkt_status.status_code == 200
+    assert mkt_status.json()["membership"]["has_active_membership"] is True
+
+    # 5. Detail view now shows FULL data for active member
+    member_detail_res = client.get(f"/api/v1/marketplace/{first_item['id']}", headers=buyer_headers)
+    assert member_detail_res.status_code == 200
+    member_detail = member_detail_res.json()
+    assert member_detail["is_preview"] is False
+    assert member_detail["selling_price_paise"] is not None
+    assert member_detail["location"] is not None
+    assert member_detail["condition"] is not None
+    assert member_detail["seller"]["email"] is not None
+
+    # 6. Messaging is now permitted
+    member_chat_res = client.post("/api/v1/chat/messages", headers=buyer_headers, json={
+        "recipient_id": detail["seller_id"],
+        "listing_id": detail["id"],
+        "content": "Hello, I am interested in purchasing this!"
+    })
+    assert member_chat_res.status_code == 201

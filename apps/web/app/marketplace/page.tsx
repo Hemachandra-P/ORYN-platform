@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { 
   Search, Filter, ShoppingBag, Plus, Sparkles, Heart, 
-  MapPin, Tag, ChevronDown, CheckCircle2 
+  MapPin, Tag, ChevronDown, CheckCircle2, Lock, ArrowRight, ShieldCheck, User
 } from "lucide-react";
 import { apiRequest, getStoredToken } from "@/lib/api";
 
@@ -206,65 +206,88 @@ export default function MarketplacePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {listings.map((item) => (
-              <Link
-                key={item.id}
-                href={`/marketplace/${item.id}`}
-                className="bg-white rounded-3xl overflow-hidden shadow-card border border-navy/5 flex flex-col group hover:shadow-elevated hover:-translate-y-1 transition-all"
-              >
-                <div className="h-52 overflow-hidden relative bg-navy/5">
-                  {item.images?.[0] ? (
-                    <img
-                      src={item.images[0].image_url}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-mutedblue text-sm">
-                      No Photo Available
-                    </div>
-                  )}
+            {listings.map((item) => {
+              const isPreview = item.is_preview || item.selling_price_paise == null;
 
-                  {item.is_moving_out_sale && (
-                    <span className="absolute top-3 left-3 bg-coral text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> Moving Out Sale
-                    </span>
-                  )}
+              return (
+                <Link
+                  key={item.id}
+                  href={`/marketplace/${item.id}`}
+                  className="bg-white rounded-3xl overflow-hidden shadow-card border border-navy/5 flex flex-col group hover:shadow-elevated hover:-translate-y-1 transition-all"
+                >
+                  <div className="h-52 overflow-hidden relative bg-navy/5">
+                    {item.images?.[0] ? (
+                      <img
+                        src={item.images[0].image_url}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-mutedblue text-sm">
+                        No Photo Available
+                      </div>
+                    )}
 
-                  <span className="absolute bottom-3 right-3 bg-navy/90 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md">
-                    ₹{(item.selling_price_paise / 100).toLocaleString("en-IN")}
-                  </span>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-mutedblue-dark mb-1.5">
-                      <span className="capitalize font-semibold text-coral">{item.category}</span>
-                      <span className="capitalize px-2 py-0.5 rounded bg-cream font-bold text-navy text-[10px]">
-                        {item.condition?.replace("_", " ")}
+                    {item.is_moving_out_sale && (
+                      <span className="absolute top-3 left-3 bg-coral text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Moving Out Sale
                       </span>
+                    )}
+
+                    {!isPreview && item.selling_price_paise != null && (
+                      <span className="absolute bottom-3 right-3 bg-navy/90 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md">
+                        ₹{(item.selling_price_paise / 100).toLocaleString("en-IN")}
+                      </span>
+                    )}
+
+                    {isPreview && (
+                      <span className="absolute top-3 right-3 bg-navy/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
+                        <Lock className="w-3 h-3 text-coral" /> Preview Mode
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      {!isPreview && (
+                        <div className="flex items-center justify-between text-xs text-mutedblue-dark mb-1.5">
+                          <span className="capitalize font-semibold text-coral">{item.category}</span>
+                          {item.condition && (
+                            <span className="capitalize px-2 py-0.5 rounded bg-cream font-bold text-navy text-[10px]">
+                              {item.condition?.replace("_", " ")}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <h3 className="font-bold text-base text-navy line-clamp-1 group-hover:text-coral transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-navy-secondary mt-1 line-clamp-2 leading-relaxed">
+                        {item.description}
+                      </p>
                     </div>
 
-                    <h3 className="font-bold text-base text-navy line-clamp-1 group-hover:text-coral transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-navy-secondary mt-1 line-clamp-2 leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
+                    <div className="mt-4 pt-4 border-t border-cream flex items-center justify-between text-xs text-mutedblue-dark">
+                      <span className="flex items-center gap-1 truncate max-w-[180px] font-medium">
+                        <User className="w-3.5 h-3.5 text-navy/60 shrink-0" />
+                        {item.seller?.full_name || "Community Seller"}
+                      </span>
 
-                  <div className="mt-4 pt-4 border-t border-cream flex items-center justify-between text-xs text-mutedblue-dark">
-                    <span className="flex items-center gap-1 truncate max-w-[180px]">
-                      <MapPin className="w-3 h-3 text-coral shrink-0" />
-                      {item.location}
-                    </span>
-                    <span className="font-bold text-navy hover:text-coral">
-                      View Item →
-                    </span>
+                      {isPreview ? (
+                        <span className="font-bold text-coral flex items-center gap-1 group-hover:underline">
+                          <Lock className="w-3 h-3" /> View Preview
+                        </span>
+                      ) : (
+                        <span className="font-bold text-navy group-hover:text-coral flex items-center gap-1">
+                          View Item →
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
