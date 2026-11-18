@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Optional Local PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: nestsync_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: nestsync_user
+      POSTGRES_PASSWORD: nestsync_password_2026
+      POSTGRES_DB: nestsync_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # FastAPI Backend API
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: nestsync_api
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://nestsync_user:nestsync_password_2026@db:5432/nestsync_db
+      - SECRET_KEY=nestsync-docker-secret-key-2026
+      - RAZORPAY_KEY_ID=rzp_test_nestsync_mock_id
+      - RAZORPAY_KEY_SECRET=mock_razorpay_secret_key_12345
+      - RAZORPAY_WEBHOOK_SECRET=mock_webhook_secret_67890
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  # Next.js Web Application
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: nestsync_web
+    restart: always
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
