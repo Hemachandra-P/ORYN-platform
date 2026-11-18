@@ -157,9 +157,17 @@ def verify_payment(
     tx.razorpay_signature = req.razorpay_signature
     tx.verified_at = datetime.utcnow()
 
-    # Activate 6-month Premium subscription (180 days)
+    # Determine plan duration
+    plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == req.plan_id).first()
+    if plan and plan.validity_months == 12:
+        validity_days = 365
+        duration_label = "1 year"
+    else:
+        validity_days = 180
+        duration_label = "6 months"
+
     start_date = datetime.utcnow()
-    end_date = start_date + timedelta(days=180)
+    end_date = start_date + timedelta(days=validity_days)
 
     sub = UserSubscription(
         user_id=current_user.id,
@@ -177,7 +185,7 @@ def verify_payment(
 
     return {
         "status": "success",
-        "message": f"Successfully activated {req.plan_id.upper()} subscription for 6 months!",
+        "message": f"Successfully activated {plan.name if plan else req.plan_id.upper()} subscription for {duration_label}!",
         "subscription_tier": current_user.subscription_tier,
         "valid_until": end_date.isoformat()
     }

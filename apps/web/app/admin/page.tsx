@@ -31,7 +31,10 @@ export default function AdminPanelPage() {
 
   // Subscription Configuration Form
   const [subConfig, setSubConfig] = useState({
-    free_member_limit: 3,
+    free_member_limit: 1,
+    basic_plus_price_inr: 49,
+    basic_plus_validity_months: 12,
+    basic_plus_member_limit: 3,
     premium_price_inr: 99,
     premium_validity_months: 6,
     premium_member_capacity: 9999,
@@ -339,19 +342,31 @@ export default function AdminPanelPage() {
 
               <form onSubmit={handleSaveSubConfig} className="space-y-6">
                 <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10 space-y-4">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-navy">Household Plan Limits</h4>
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-navy">Household Plans Configuration</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-navy mb-1">Free Flat Member Limit</label>
+                      <label className="block text-xs font-bold text-navy mb-1">Free Plan User Limit</label>
                       <input
                         type="number"
                         min="1"
-                        max="10"
+                        max="1"
                         value={subConfig.free_member_limit}
-                        onChange={(e) => setSubConfig({ ...subConfig, free_member_limit: parseInt(e.target.value || "3") })}
+                        onChange={(e) => setSubConfig({ ...subConfig, free_member_limit: parseInt(e.target.value || "1") })}
                         className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
                       />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">Default is 3 members total</p>
+                      <p className="text-[10px] text-mutedblue-dark mt-1">1 individual user only</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-navy mb-1">Basic Plus Price (₹ INR)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={subConfig.basic_plus_price_inr}
+                        onChange={(e) => setSubConfig({ ...subConfig, basic_plus_price_inr: parseInt(e.target.value || "49") })}
+                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
+                      />
+                      <p className="text-[10px] text-mutedblue-dark mt-1">₹49 / year (3 members max)</p>
                     </div>
 
                     <div>
@@ -363,19 +378,7 @@ export default function AdminPanelPage() {
                         onChange={(e) => setSubConfig({ ...subConfig, premium_price_inr: parseInt(e.target.value || "99") })}
                         className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
                       />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">Initial pricing is ₹99</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-navy mb-1">Premium Validity (Months)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={subConfig.premium_validity_months}
-                        onChange={(e) => setSubConfig({ ...subConfig, premium_validity_months: parseInt(e.target.value || "6") })}
-                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
-                      />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">Six months validity</p>
+                      <p className="text-[10px] text-mutedblue-dark mt-1">₹99 / 6 months (unlimited)</p>
                     </div>
                   </div>
                 </div>

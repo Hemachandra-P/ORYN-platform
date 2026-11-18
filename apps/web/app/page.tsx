@@ -11,7 +11,6 @@ import { apiRequest } from "@/lib/api";
 
 export default function LandingPage() {
   const [featuredListings, setFeaturedListings] = useState<any[]>([]);
-  const [activeAiDemo, setActiveAiDemo] = useState<number>(0);
 
   useEffect(() => {
     // Fetch live marketplace items
@@ -20,23 +19,24 @@ export default function LandingPage() {
       .catch((err) => console.log("Listings fetch fallback", err));
   }, []);
 
-  const aiDemos = [
+  const [workflowDemos] = useState([
     {
-      query: "Rahul paid ₹1,200 for weekly groceries. Split equally with everyone.",
-      intent: "Expense Management",
-      result: "Logged ₹1,200 under Groceries. Created 6 equal shares of ₹200. Sent instant notifications to all flatmates."
+      query: "Rahul paid ₹1,200 for weekly groceries. Split equally with flatmates.",
+      intent: "Penny-Accurate Expense Splitting",
+      result: "Logged ₹1,200 under Groceries. Created 3 equal shares of ₹400 with paise precision. Updated roommate net balances and settlement ledgers instantly."
     },
     {
-      query: "We are out of dish soap and basmati rice.",
+      query: "Running low on dish soap, olive oil and basmati rice.",
       intent: "Collaborative Shopping List",
-      result: "Added 'Dish Soap' and 'Basmati Rice' to Skyline 402 shopping list with 1 unit quantity."
+      result: "Added items to Skyline 402 shared shopping list. Any flatmate at the supermarket can check off items with one tap."
     },
     {
       query: "Assign kitchen stove cleaning to Joy every Sunday.",
-      intent: "Recurring Chore Scheduling",
-      result: "Created weekly task 'Kitchen stove cleaning' assigned to Joy Mukherjee starting this Sunday."
+      intent: "Flatmate Chore Delegation",
+      result: "Scheduled weekly chore assigned to Joy Mukherjee. Automatic in-app notification sent to the assigned flatmate."
     }
-  ];
+  ]);
+  const [activeWorkflowDemo, setActiveWorkflowDemo] = useState<number>(0);
 
   return (
     <div className="min-h-screen bg-cream text-navy flex flex-col">
@@ -55,7 +55,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="mt-6 text-lg sm:text-xl text-navy-secondary max-w-2xl mx-auto font-normal">
-            Track flatmate bills with penny-accurate splits, automate chores with AI voice commands, and buy or sell used furniture & appliances in your community.
+            Track flatmate bills with penny-accurate splits, organize chores &amp; shared responsibilities, and buy or sell used furniture &amp; appliances in your community.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -91,8 +91,8 @@ export default function LandingPage() {
               <p className="text-xs text-mutedblue-dark font-medium mt-1">Affordable Annual Student Plans</p>
             </div>
             <div className="bg-white p-5 rounded-2xl shadow-card border border-navy/5 text-left">
-              <p className="text-3xl font-black text-navy">AI-Ready</p>
-              <p className="text-xs text-mutedblue-dark font-medium mt-1">Voice & Text Action Recognition</p>
+              <p className="text-base sm:text-lg font-black text-navy leading-tight">Smart Household Management</p>
+              <p className="text-xs text-mutedblue-dark font-medium mt-1">Expenses, bills, tasks and shared responsibilities — organized in one place.</p>
             </div>
           </div>
         </div>
@@ -144,42 +144,42 @@ export default function LandingPage() {
           {/* Pillar 4 */}
           <div className="bg-white p-7 rounded-3xl shadow-card border border-navy/5 hover:-translate-y-1 transition-all">
             <div className="w-12 h-12 rounded-2xl bg-navy text-white flex items-center justify-center mb-5">
-              <Sparkles className="w-6 h-6 text-amber-400" />
+              <CheckCircle2 className="w-6 h-6 text-coral" />
             </div>
-            <h3 className="font-bold text-xl text-navy mb-2">AI Household Assistant</h3>
+            <h3 className="font-bold text-xl text-navy mb-2">Chore Delegation & Tasks</h3>
             <p className="text-sm text-navy-secondary leading-relaxed">
-              Speak or type naturally: &quot;Rahul paid ₹300 for milk&quot;. AI automatically categorizes, splits, and updates your ledger safely after confirmation.
+              Assign kitchen cleaning, trash duty or supermarket errands to specific flatmates. Shared checklists and transparent balance ledgers keep everyone accountable.
             </p>
           </div>
         </div>
       </section>
 
-      {/* INTERACTIVE AI ASSISTANT DEMO */}
+      {/* SMART HOUSEHOLD WORKFLOW SHOWCASE */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-navy text-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="px-3 py-1 rounded-full bg-coral/20 text-coral font-bold text-xs uppercase tracking-wider">
-              Interactive AI Assistant
+              Smart Household Workflows
             </span>
-            <h2 className="text-3xl font-extrabold mt-3">Speak or text your household needs</h2>
+            <h2 className="text-3xl font-extrabold mt-3">Shared living, organized effortlessly</h2>
             <p className="text-mutedblue text-sm mt-2">
-              The AI never executes arbitrary commands. It structures human language into validated actions for your confirmation.
+              Expenses, bills, shopping lists, and chores — structured and transparent for every roommate.
             </p>
           </div>
 
           <div className="bg-navy-secondary rounded-3xl p-6 sm:p-8 border border-white/10 shadow-elevated">
             <div className="flex flex-wrap gap-2 mb-6 border-b border-white/10 pb-4">
-              {aiDemos.map((demo, idx) => (
+              {workflowDemos.map((demo, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setActiveAiDemo(idx)}
+                  onClick={() => setActiveWorkflowDemo(idx)}
                   className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                    activeAiDemo === idx 
+                    activeWorkflowDemo === idx 
                       ? "bg-coral text-white shadow-md" 
                       : "bg-navy text-mutedblue hover:text-white"
                   }`}
                 >
-                  Example {idx + 1}: {demo.intent}
+                  Feature {idx + 1}: {demo.intent}
                 </button>
               ))}
             </div>
@@ -187,12 +187,12 @@ export default function LandingPage() {
             <div className="space-y-4">
               <div className="flex items-start gap-3 bg-navy/60 p-4 rounded-2xl border border-white/5">
                 <div className="w-8 h-8 rounded-full bg-coral/20 text-coral flex items-center justify-center shrink-0">
-                  <Mic className="w-4 h-4" />
+                  <Receipt className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs text-mutedblue uppercase font-semibold tracking-wider">User Input (Text / Voice)</p>
+                  <p className="text-xs text-mutedblue uppercase font-semibold tracking-wider">Household Activity</p>
                   <p className="text-base font-medium text-white mt-1">
-                    &quot;{aiDemos[activeAiDemo].query}&quot;
+                    &quot;{workflowDemos[activeWorkflowDemo].query}&quot;
                   </p>
                 </div>
               </div>
@@ -203,13 +203,13 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs text-emerald-400 uppercase font-semibold tracking-wider">Structured Action Output</p>
+                    <p className="text-xs text-emerald-400 uppercase font-semibold tracking-wider">Automated Ledger &amp; Sync</p>
                     <span className="text-[10px] bg-emerald-400/20 text-emerald-300 px-2 py-0.5 rounded font-mono">
-                      VALIDATED
+                      SYNCED
                     </span>
                   </div>
                   <p className="text-sm text-cream mt-1 leading-relaxed">
-                    {aiDemos[activeAiDemo].result}
+                    {workflowDemos[activeWorkflowDemo].result}
                   </p>
                 </div>
               </div>
@@ -285,114 +285,199 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-cream-light border-y border-cream-dark">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-coral">Fair & Accessible Pricing</h2>
-            <p className="text-3xl sm:text-4xl font-extrabold text-navy mt-1">Simple annual subscriptions</p>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-coral">Fair &amp; Transparent Pricing</h2>
+            <p className="text-3xl sm:text-4xl font-extrabold text-navy mt-1">Household Plans &amp; Campus Marketplace</p>
             <p className="text-navy-secondary text-sm mt-2">
-              No hidden monthly fees. Every tier includes shared expense tracking so roommates can budget smoothly.
+              Free individual browsing, affordable household plans for flatmates, and a ₹20 membership for buying and selling.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Free Tier */}
+            {/* 1. Free Plan */}
             <div className="bg-white p-8 rounded-3xl shadow-card border border-navy/5 flex flex-col justify-between">
               <div>
-                <h3 className="font-bold text-xl text-navy">Free Community</h3>
-                <p className="text-xs text-mutedblue-dark mt-1">Essential tools for students and flatmates</p>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cream text-navy">
+                  Individual Only
+                </span>
+                <h3 className="font-bold text-xl text-navy mt-2">Free Plan</h3>
+                <p className="text-xs text-mutedblue-dark mt-1">One individual user account</p>
                 <div className="mt-6 mb-6">
                   <span className="text-4xl font-black text-navy">₹0</span>
-                  <span className="text-xs text-mutedblue-dark ml-1">/year forever</span>
+                  <span className="text-xs text-mutedblue-dark ml-1">/ Free Forever</span>
                 </div>
-                <ul className="space-y-3 text-sm text-navy-secondary">
+                <ul className="space-y-3 text-xs text-navy-secondary">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> 1 Active Household
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> 1 Individual user account
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Equal Expense Splitting
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Log in &amp; access web and mobile apps
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Shared Shopping List & Chores
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Browse community marketplace for free
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Buy & Sell Marketplace Access
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> View public listings &amp; product details
+                  </li>
+                  <li className="pt-2 text-[11px] text-mutedblue-dark border-t border-cream">
+                    Cannot create or join households. Upgrade to Basic Plus to manage flat expenses.
                   </li>
                 </ul>
               </div>
               <Link
                 href="/auth/register"
-                className="mt-8 w-full py-3 rounded-xl bg-navy text-white text-center font-bold text-sm hover:bg-navy-secondary transition-all"
+                className="mt-8 w-full py-3 rounded-xl bg-navy text-white text-center font-bold text-xs hover:bg-navy-secondary transition-all"
               >
-                Join Free
+                Get Started Free
               </Link>
             </div>
 
-            {/* Basic Plus Tier (₹49) */}
+            {/* 2. Basic Plus Plan (₹49/year) */}
             <div className="bg-white p-8 rounded-3xl shadow-elevated border-2 border-coral relative flex flex-col justify-between">
               <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-coral text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-md">
                 Most Popular
               </span>
               <div>
-                <h3 className="font-bold text-xl text-navy">Basic Plus</h3>
-                <p className="text-xs text-mutedblue-dark mt-1">Custom splits & recurring bill tracking</p>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-coral-light text-coral">
+                  Up to 3 Flatmates
+                </span>
+                <h3 className="font-bold text-xl text-navy mt-2">Basic Plus</h3>
+                <p className="text-xs text-mutedblue-dark mt-1">Up to 3 total household members</p>
                 <div className="mt-6 mb-6">
                   <span className="text-4xl font-black text-coral">₹49</span>
-                  <span className="text-xs text-mutedblue-dark ml-1">/year</span>
+                  <span className="text-xs text-mutedblue-dark ml-1">/ 1 Year</span>
                 </div>
-                <ul className="space-y-3 text-sm text-navy-secondary">
+                <ul className="space-y-3 text-xs text-navy-secondary">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Up to 3 Active Households
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Create 1 household with up to 3 members
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Custom & Percentage Expense Splits
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Shared expense tracking down to paise
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Recurring Bill Reminders (Electricity, Rent)
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Equal, custom &amp; percentage splitting
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> 100 AI Voice/Text Requests / Month
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Recurring &amp; custom bill management
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Priority Marketplace Listing Badge
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Shared shopping lists
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Task assignment &amp; flatmate delegation
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Household activity history &amp; monthly reports
                   </li>
                 </ul>
               </div>
               <Link
                 href="/subscriptions"
-                className="mt-8 w-full py-3 rounded-xl bg-coral text-white text-center font-bold text-sm hover:bg-coral-hover shadow-md transition-all"
+                className="mt-8 w-full py-3 rounded-xl bg-coral text-white text-center font-bold text-xs hover:bg-coral-hover shadow-md transition-all"
               >
                 Upgrade to Basic Plus
               </Link>
             </div>
 
-            {/* Premium Tier (₹99) */}
+            {/* 3. Premium Household Plan (₹99 / 6 months) */}
             <div className="bg-white p-8 rounded-3xl shadow-card border border-navy/5 flex flex-col justify-between">
               <div>
-                <h3 className="font-bold text-xl text-navy">Premium Lifestyle</h3>
-                <p className="text-xs text-mutedblue-dark mt-1">Unlimited AI & Moving Out Bundles</p>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  Unlimited Flatmates
+                </span>
+                <h3 className="font-bold text-xl text-navy mt-2">Premium Household</h3>
+                <p className="text-xs text-mutedblue-dark mt-1">Unlimited members for large flats</p>
                 <div className="mt-6 mb-6">
                   <span className="text-4xl font-black text-navy">₹99</span>
-                  <span className="text-xs text-mutedblue-dark ml-1">/year</span>
+                  <span className="text-xs text-mutedblue-dark ml-1">/ 6 Months</span>
                 </div>
-                <ul className="space-y-3 text-sm text-navy-secondary">
+                <ul className="space-y-3 text-xs text-navy-secondary">
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Unlimited Households
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Unlimited household members
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Moving Out Sale Bundle Collections
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> All Basic Plus features included
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Unlimited AI Voice & Text Automation
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Only owner pays ₹99 — flatmates join free
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Advanced Multi-Year Spending Analytics
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Advanced expense management &amp; analytics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Unlimited custom bill categories
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Complete financial history
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Existing members preserved on expiry
                   </li>
                 </ul>
               </div>
               <Link
                 href="/subscriptions"
-                className="mt-8 w-full py-3 rounded-xl bg-navy text-white text-center font-bold text-sm hover:bg-navy-secondary transition-all"
+                className="mt-8 w-full py-3 rounded-xl bg-navy text-white text-center font-bold text-xs hover:bg-navy-secondary transition-all"
               >
-                Get Premium
+                Upgrade to Premium
               </Link>
+            </div>
+          </div>
+
+          {/* SEPARATE 4TH OFFERING: MARKETPLACE MEMBERSHIP */}
+          <div className="mt-12 bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/10 relative overflow-hidden max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+              <div className="md:col-span-8 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-coral/10 text-coral flex items-center justify-center font-bold">
+                    <ShoppingBag className="w-4 h-4" />
+                  </span>
+                  <h3 className="text-xl font-black text-navy">Marketplace Membership</h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                    Independent Offering
+                  </span>
+                </div>
+                <p className="text-xs text-navy-secondary leading-relaxed">
+                  Browsing and viewing marketplace listings is always <strong>100% free</strong>. An active Marketplace Membership unlocks unlimited buying and selling of used study furniture, appliances, cycles, and textbooks with <strong>zero per-listing charges</strong> and no separate buyer fees.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs font-semibold text-navy">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Buy &amp; sell products
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Publish unlimited listings
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Direct buyer/seller chat
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Moving Out sale collections
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Zero per-listing charges
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> 6 months active validity
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-4 bg-cream/40 rounded-2xl p-6 border border-navy/10 text-center space-y-3">
+                <div>
+                  <p className="text-[11px] uppercase font-bold text-mutedblue-dark">Marketplace Access</p>
+                  <div className="mt-1 flex items-baseline justify-center gap-1">
+                    <span className="text-4xl font-black text-navy">₹20</span>
+                    <span className="text-xs font-bold text-navy-secondary">/ 6 Months</span>
+                  </div>
+                </div>
+                <Link
+                  href="/subscriptions"
+                  className="w-full py-3 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Zap className="w-4 h-4" />
+                  Get Marketplace Membership
+                </Link>
+                <p className="text-[10px] text-mutedblue-dark">Independent of household subscriptions</p>
+              </div>
             </div>
           </div>
         </div>
@@ -402,7 +487,7 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-xs font-bold uppercase tracking-wider text-coral">Community Feedback</h2>
-          <p className="text-3xl font-extrabold text-navy mt-1">Trusted by students & young professionals</p>
+          <p className="text-3xl font-extrabold text-navy mt-1">Trusted by students &amp; young professionals</p>
           <p className="text-xs text-mutedblue-dark mt-2 font-mono">(Sample pilot cohort experiences)</p>
         </div>
 
@@ -439,7 +524,7 @@ export default function LandingPage() {
 
           <div className="bg-white p-6 rounded-3xl shadow-card border border-navy/5">
             <p className="text-sm text-navy-secondary italic">
-              &quot;The voice AI assistant understands complex splits like &apos;Rahul paid 450, split with everyone except Joy&apos;. It removes the tedious manual data entry completely.&quot;
+              &quot;The split calculator handles complex splits effortlessly, like &apos;Rahul paid 450, split with everyone except Joy&apos;. It removes the tedious manual math completely.&quot;
             </p>
             <div className="mt-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-emerald-500/20 font-bold text-emerald-600 flex items-center justify-center text-xs">

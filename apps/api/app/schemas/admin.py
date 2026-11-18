@@ -83,7 +83,10 @@ class PlatformSettingUpdate(BaseModel):
     value: str
 
 class SubscriptionConfigUpdate(BaseModel):
-    free_member_limit: int = 3
+    free_member_limit: int = 1
+    basic_plus_price_inr: int = 49
+    basic_plus_validity_months: int = 12
+    basic_plus_member_limit: int = 3
     premium_price_inr: int = 99
     premium_validity_months: int = 6
     premium_member_capacity: int = 9999

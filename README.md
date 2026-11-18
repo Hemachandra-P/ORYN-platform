@@ -36,17 +36,36 @@ D:\SRM_website/
 
 ## 💎 Consolidated Pricing & Features Architecture
 
-### 1. Marketplace Membership Subscription (₹20 / 6 Months)
-- **Free Browsing**: All registered users can browse, search, and view marketplace products for free.
-- **₹20 Membership**: To publish listings (selling) or initiate buying transactions (checkout), users purchase a **6-Month Marketplace Membership** for ₹20 (2,000 paise).
-- **Unlimited Transactions**: Once active, members can publish unlimited listings and execute purchases with ₹0 per-listing transaction fees.
-- **Expiration & Renewal**: Validity lasts exactly 6 months. Expired users retain browsing access and can renew anytime from `/subscriptions`.
+NestSync offers four distinct and clearly defined subscription offerings:
 
-### 2. Household Subscriptions & Member Limits
-- **Free Household Plan (₹0)**: Maximum **3 members total** (including the owner). Full access to shared expenses, bills, shopping lists, and chores.
-- **Premium Household Plan (₹99 / 6 Months)**: **Unlimited household members** (subject to platform abuse limits).
-- **Flatmates Join Free**: Only the household owner pays for the Premium plan. Flatmates join without individual subscriptions.
-- **Graceful Expiration**: If the owner's subscription expires, existing members are never kicked out. New joins are blocked until the owner renews or membership drops below 3.
+| Subscription | Price | Duration | Capacity | Primary Scope |
+|---|---:|---|---|---|
+| **Free Plan** | ₹0 | Forever | 1 individual user | Individual account & free marketplace browsing |
+| **Basic Plus** | ₹49 | 1 year | 3 total household members | Household creation, expense splits, bills & tasks |
+| **Premium Household** | ₹99 | 6 months | Unlimited household members | Advanced analytics, custom bills & unlimited flatmates |
+| **Marketplace Membership** | ₹20 | 6 months | Individual user access | Unlimited buying & selling on the marketplace |
+
+### 1. Plan 1 — Free Plan
+- **Price**: ₹0 — Free Forever
+- **Capacity**: 1 individual user only.
+- **Features**: Create account, log in, browse marketplace, view publicly available listings and product details.
+- **Restrictions**: Cannot create or join households; cannot split expenses, manage bills, create shared shopping lists, or assign chores.
+
+### 2. Plan 2 — Basic Plus
+- **Price**: ₹49 / 1 Year (12 Months)
+- **Capacity**: Up to 3 total household members (including owner).
+- **Features**: Create 1 household, add up to 2 additional flatmates, shared expense tracking down to paise, equal/custom/percentage splitting, recurring & custom bill management, shared shopping lists, task assignment & flatmate delegation, monthly spending reports.
+
+### 3. Plan 3 — Premium Household
+- **Price**: ₹99 / 6 Months
+- **Capacity**: Unlimited household members.
+- **Features**: All Basic Plus features, unlimited members, only household owner pays ₹99 (flatmates join free), advanced expense analytics, unlimited custom bill categories, complete financial history.
+- **Graceful Expiration**: Existing members are never kicked out when expired; adding new members is restricted if the household exceeds basic capacity until renewal.
+
+### 4. Plan 4 — Marketplace Membership
+- **Price**: ₹20 / 6 Months
+- **Scope**: Completely independent from household subscriptions.
+- **Features**: Browsing is always 100% free for everyone. Active membership unlocks unlimited buying and selling with zero per-listing charges and zero buyer fees.
 
 ### 3. Community, Building, and Flat Hierarchy
 - Every household belongs to a structured geographic hierarchy:

@@ -457,11 +457,15 @@ export default function HouseholdHubPage() {
                 </h1>
                 {capacity?.is_premium ? (
                   <span className="px-2 py-0.5 rounded-full bg-coral-light text-coral text-[10px] font-black uppercase">
-                    Premium Flat
+                    Premium Flat (Unlimited)
+                  </span>
+                ) : capacity?.plan_id === "basic_plus" ? (
+                  <span className="px-2 py-0.5 rounded-full bg-coral/10 text-coral text-[10px] font-black uppercase">
+                    Basic Plus ({capacity?.current_members_count || 1}/3 members)
                   </span>
                 ) : (
                   <span className="px-2 py-0.5 rounded-full bg-cream text-navy text-[10px] font-black uppercase">
-                    Free Plan ({capacity?.current_members_count || 1}/{capacity?.max_allowed || 3})
+                    Household ({capacity?.current_members_count || 1}/{capacity?.max_allowed || 3} members)
                   </span>
                 )}
               </div>
@@ -534,36 +538,72 @@ export default function HouseholdHubPage() {
       )}
 
       {/* NAVIGATION TABS */}
-      <div className="bg-white border-b border-cream-dark px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-6 overflow-x-auto py-3">
-          {[
-            { id: "expenses", label: "Shared Expenses", icon: Receipt },
-            { id: "bills", label: "Recurring Bills", icon: Clock },
-            { id: "shopping", label: "Shopping List", icon: ShoppingCart },
-            { id: "tasks", label: "Chores & Tasks", icon: CheckSquare },
-            { id: "members", label: "Manage Members", icon: Users },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
-                  isActive
-                    ? "bg-navy text-white shadow-sm"
-                    : "text-navy-secondary hover:text-navy hover:bg-cream"
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-coral" : "text-mutedblue-dark"}`} />
-                {tab.label}
-              </button>
-            );
-          })}
+      {activeHousehold && (
+        <div className="bg-white border-b border-cream-dark px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-6 overflow-x-auto py-3">
+            {[
+              { id: "expenses", label: "Shared Expenses", icon: Receipt },
+              { id: "bills", label: "Recurring Bills", icon: Clock },
+              { id: "shopping", label: "Shopping List", icon: ShoppingCart },
+              { id: "tasks", label: "Chores & Tasks", icon: CheckSquare },
+              { id: "members", label: "Manage Members", icon: Users },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
+                    isActive
+                      ? "bg-navy text-white shadow-sm"
+                      : "text-navy-secondary hover:text-navy hover:bg-cream"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-coral" : "text-mutedblue-dark"}`} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* EMPTY / ONBOARDING UPGRADE STATE IF NO ACTIVE HOUSEHOLD */}
+      {!activeHousehold && (
+        <div className="max-w-3xl mx-auto my-12 p-8 bg-white rounded-3xl shadow-card border border-navy/10 text-center space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-coral/10 text-coral flex items-center justify-center mx-auto">
+            <Building className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-navy">Welcome to Household Hub</h2>
+          <p className="text-xs sm:text-sm text-navy-secondary max-w-lg mx-auto leading-relaxed">
+            Free Plan accounts can browse the community marketplace. To create a household, split bills, and manage tasks with flatmates, upgrade to <strong>Basic Plus (₹49/year)</strong> or <strong>Premium Household (₹99/6 months)</strong>.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <Link
+              href="/subscriptions"
+              className="px-6 py-3 rounded-2xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" /> View Subscription Plans
+            </Link>
+            <button
+              onClick={() => setShowJoinModal(true)}
+              className="px-5 py-3 rounded-2xl bg-cream hover:bg-navy/10 text-navy text-xs font-bold border border-navy/15 transition-all flex items-center gap-1.5"
+            >
+              <KeyRound className="w-3.5 h-3.5" /> Join Flat with Code
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-5 py-3 rounded-2xl bg-navy hover:bg-navy-secondary text-white text-xs font-bold transition-all flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" /> Create New Flat
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* MAIN TAB CONTENT */}
+      {activeHousehold && (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
         {/* 1. SHARED EXPENSES TAB */}
         {activeTab === "expenses" && (
@@ -912,6 +952,7 @@ export default function HouseholdHubPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* CREATE HOUSEHOLD MODAL (Feature 3 Community Hierarchy) */}
       {showCreateModal && (

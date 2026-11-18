@@ -69,40 +69,61 @@ def on_startup():
             )
             db.add(super_admin)
 
-        # 2. Bootstrap Subscription Plans per Feature 2:
-        # Free Household Plan: ₹0, max 3 members
-        # Premium Household Plan: ₹99 for 6 months, unlimited members
+        # 2. Bootstrap Subscription Plans per Final Approved Structure:
+        # Free: ₹0 forever, 1 individual user
+        # Basic Plus: ₹49/year, up to 3 total household members
+        # Premium Household: ₹99/6 months, unlimited household members
         plans_data = [
             {
                 "id": "free",
-                "name": "Free Household Plan",
+                "name": "Free Plan",
                 "price_inr_year": 0,
-                "validity_months": 6,
-                "description": "Essential household budgeting, bills, and task management for up to 3 flatmates.",
+                "validity_months": 0,
+                "description": "Individual account for browsing the community marketplace and public listings.",
                 "features_json": json.dumps([
-                    "Up to 3 Household Members Total (including Owner)",
-                    "Shared Expenses & Equal Splits",
-                    "Recurring Bills & Reminders",
-                    "Shared Shopping Lists & Chores",
-                    "Task Assignment to Flatmates",
-                    "Free Marketplace Browsing"
+                    "Individual account for 1 user",
+                    "Browse campus marketplace for free",
+                    "View publicly available product listings & details",
+                    "Upgrade to Basic Plus to create or join a household"
+                ]),
+                "max_members": 1,
+                "max_households": 0
+            },
+            {
+                "id": "basic_plus",
+                "name": "Basic Plus",
+                "price_inr_year": 49,
+                "validity_months": 12,
+                "description": "Essential shared living for small flats and rooms up to 3 members.",
+                "features_json": json.dumps([
+                    "Create 1 household with up to 3 total members",
+                    "Shared household expense tracking down to paise",
+                    "Equal, custom and percentage expense splitting",
+                    "Recurring and custom bill management",
+                    "Shared shopping lists",
+                    "Household task assignment & flatmate delegation",
+                    "Household activity history",
+                    "Monthly household spending reports"
                 ]),
                 "max_members": 3,
                 "max_households": 1
             },
             {
                 "id": "premium",
-                "name": "Premium Household Plan",
+                "name": "Premium Household",
                 "price_inr_year": 99,
                 "validity_months": 6,
-                "description": "Unlock unlimited flatmates for six months. Flatmates join without paying.",
+                "description": "Unlimited members for large flats and shared student apartments for 6 months.",
                 "features_json": json.dumps([
-                    "Unlimited Household Members for 6 Months",
-                    "Only Owner Pays ₹99 — Flatmates Join for Free",
-                    "Advanced Custom Splits & Expense Tracking",
-                    "Unlimited Custom Bill Categories",
-                    "Full Task Assignment & Delegation Ledger",
-                    "Priority Community Badge"
+                    "Unlimited household members",
+                    "All Basic Plus features included",
+                    "Only household owner pays ₹99 — flatmates join free",
+                    "Advanced household expense management",
+                    "Unlimited custom bill categories",
+                    "Complete household financial history",
+                    "Advanced household analytics",
+                    "Full task assignment and flatmate delegation",
+                    "Existing members preserved on expiration"
                 ]),
                 "max_members": 9999,
                 "max_households": 999
@@ -118,6 +139,10 @@ def on_startup():
                 existing_plan.name = p["name"]
                 existing_plan.price_inr_year = p["price_inr_year"]
                 existing_plan.validity_months = p["validity_months"]
+                existing_plan.description = p["description"]
+                existing_plan.features_json = p["features_json"]
+                existing_plan.max_members = p["max_members"]
+                existing_plan.max_households = p["max_households"]
                 existing_plan.max_members = p["max_members"]
 
         # 3. Bootstrap Predefined Communities

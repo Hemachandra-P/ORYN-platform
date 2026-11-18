@@ -135,13 +135,17 @@ def get_subscription_config(
     db: Session = Depends(get_db)
 ):
     free_plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "free").first()
+    basic_plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "basic_plus").first()
     premium_plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "premium").first()
 
     mkt_price_setting = db.query(PlatformSetting).filter(PlatformSetting.key == "marketplace_membership_price_inr").first()
     mkt_validity_setting = db.query(PlatformSetting).filter(PlatformSetting.key == "marketplace_membership_validity_months").first()
 
     return {
-        "free_member_limit": free_plan.max_members if free_plan else 3,
+        "free_member_limit": free_plan.max_members if free_plan else 1,
+        "basic_plus_price_inr": basic_plan.price_inr_year if basic_plan else 49,
+        "basic_plus_validity_months": getattr(basic_plan, "validity_months", 12),
+        "basic_plus_member_limit": getattr(basic_plan, "max_members", 3),
         "premium_price_inr": premium_plan.price_inr_year if premium_plan else 99,
         "premium_validity_months": getattr(premium_plan, "validity_months", 6),
         "premium_member_capacity": getattr(premium_plan, "max_members", 9999),
@@ -158,6 +162,12 @@ def update_subscription_config(
     free_plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "free").first()
     if free_plan:
         free_plan.max_members = req.free_member_limit
+
+    basic_plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "basic_plus").first()
+    if basic_plan:
+        basic_plan.price_inr_year = req.basic_plus_price_inr
+        basic_plan.validity_months = req.basic_plus_validity_months
+        basic_plan.max_members = req.basic_plus_member_limit
 
     premium_plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == "premium").first()
     if premium_plan:
