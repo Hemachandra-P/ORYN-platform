@@ -161,7 +161,7 @@ export default function SellListingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream text-navy flex flex-col">
+    <div className="min-h-screen bg-paper text-navy flex flex-col">
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
@@ -193,7 +193,7 @@ export default function SellListingPage() {
         )}
 
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/5">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-cream">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-paper">
             <div>
               <h1 className="text-2xl font-black text-navy tracking-tight">Create Item Listing</h1>
               <p className="text-xs text-navy-secondary mt-1">
@@ -218,7 +218,7 @@ export default function SellListingPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-navy">
                   Product Photographs (Up to 8) *
                 </label>
-                <span className="text-[11px] font-bold text-mutedblue-dark">
+                <span className="text-[11px] font-bold text-mist-dark">
                   {uploadedImages.length} / 8 uploaded
                 </span>
               </div>
@@ -226,7 +226,7 @@ export default function SellListingPage() {
               {/* Upload Dropzone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-navy/20 hover:border-coral rounded-2xl p-6 text-center cursor-pointer transition-colors bg-cream/30 hover:bg-cream/60 flex flex-col items-center justify-center gap-2"
+                className="border-2 border-dashed border-navy/20 hover:border-coral rounded-2xl p-6 text-center cursor-pointer transition-colors bg-paper/30 hover:bg-paper/60 flex flex-col items-center justify-center gap-2"
               >
                 <input
                   ref={fileInputRef}
@@ -242,7 +242,7 @@ export default function SellListingPage() {
                 <p className="text-xs font-bold text-navy">
                   {uploading ? "Uploading photographs..." : "Click or tap to upload from computer or gallery"}
                 </p>
-                <p className="text-[10px] text-mutedblue-dark">
+                <p className="text-[10px] text-mist-dark">
                   Supports JPG, PNG, WebP up to 8 images. Click star to choose cover photo.
                 </p>
               </div>
@@ -442,7 +442,7 @@ export default function SellListingPage() {
             </div>
 
             {/* MOVING OUT COLLECTION TOGGLE */}
-            <div className="p-4 rounded-2xl bg-cream/40 border border-coral/20">
+            <div className="p-4 rounded-2xl bg-paper/40 border border-coral/20">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"

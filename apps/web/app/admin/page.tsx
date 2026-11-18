@@ -198,7 +198,7 @@ export default function AdminPanelPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-cream text-navy flex flex-col">
+    <div className="min-h-screen bg-paper text-navy flex flex-col">
       <Navbar />
 
       {toastMsg && (
@@ -222,7 +222,7 @@ export default function AdminPanelPage() {
                   LIVE SECURE SESSION
                 </span>
               </div>
-              <p className="text-xs text-mutedblue mt-0.5">
+              <p className="text-xs text-mist mt-0.5">
                 Authorized Admin: {currentUser?.full_name} ({currentUser?.role})
               </p>
             </div>
@@ -251,10 +251,10 @@ export default function AdminPanelPage() {
                   className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
                     isActive
                       ? "bg-navy text-white shadow-sm"
-                      : "text-navy-secondary hover:bg-cream hover:text-navy"
+                      : "text-navy-secondary hover:bg-paper hover:text-navy"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-coral" : "text-mutedblue-dark"}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-coral" : "text-mist-dark"}`} />
                   {item.label}
                 </button>
               );
@@ -269,7 +269,7 @@ export default function AdminPanelPage() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Total Users</p>
+                  <p className="text-[11px] text-mist-dark uppercase font-semibold">Total Users</p>
                   <p className="text-3xl font-black text-navy mt-1">{metrics.total_users}</p>
                   <p className="text-[10px] text-emerald-600 font-bold mt-1">
                     {metrics.active_users} Active · +{metrics.new_registrations_last_30d} 30d
@@ -277,29 +277,29 @@ export default function AdminPanelPage() {
                 </div>
 
                 <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Households & Flats</p>
+                  <p className="text-[11px] text-mist-dark uppercase font-semibold">Households & Flats</p>
                   <p className="text-3xl font-black text-navy mt-1">{metrics.total_households}</p>
-                  <p className="text-[10px] text-mutedblue-dark mt-1">
+                  <p className="text-[10px] text-mist-dark mt-1">
                     {metrics.free_households} Free · {metrics.premium_households} Premium
                   </p>
                 </div>
 
                 <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Mkt Memberships</p>
+                  <p className="text-[11px] text-mist-dark uppercase font-semibold">Mkt Memberships</p>
                   <p className="text-3xl font-black text-coral mt-1">
                     {metrics.active_marketplace_memberships}
                   </p>
-                  <p className="text-[10px] text-mutedblue-dark mt-1">
+                  <p className="text-[10px] text-mist-dark mt-1">
                     Active (₹20/6-mo) · {metrics.expired_marketplace_memberships} Expired
                   </p>
                 </div>
 
                 <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Marketplace Revenue</p>
+                  <p className="text-[11px] text-mist-dark uppercase font-semibold">Marketplace Revenue</p>
                   <p className="text-3xl font-black text-emerald-600 mt-1">
                     ₹{(metrics.total_marketplace_membership_revenue_paise / 100).toFixed(2)}
                   </p>
-                  <p className="text-[10px] text-mutedblue-dark mt-1">Separate from Subscriptions</p>
+                  <p className="text-[10px] text-mist-dark mt-1">Separate from Subscriptions</p>
                 </div>
               </div>
 
@@ -307,21 +307,21 @@ export default function AdminPanelPage() {
               <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
                 <h3 className="font-bold text-sm text-navy mb-4">Platform Operational Health</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
-                  <div className="p-4 rounded-2xl bg-cream-light border border-cream">
+                  <div className="p-4 rounded-2xl bg-paper-light border border-paper">
                     <p className="font-bold text-navy">Household Premium Subs Revenue</p>
                     <p className="text-2xl font-black text-navy mt-1">
                       ₹{(metrics.total_verified_subscription_revenue_paise / 100).toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-cream-light border border-cream">
+                  <div className="p-4 rounded-2xl bg-paper-light border border-paper">
                     <p className="font-bold text-navy">Pending Join Requests</p>
                     <p className="text-2xl font-black text-coral mt-1">{metrics.pending_join_requests}</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-cream-light border border-cream">
+                  <div className="p-4 rounded-2xl bg-paper-light border border-paper">
                     <p className="font-bold text-navy">Flagged Listings</p>
                     <p className="text-2xl font-black text-navy mt-1">{metrics.reported_listings_count}</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-cream-light border border-cream">
+                  <div className="p-4 rounded-2xl bg-paper-light border border-paper">
                     <p className="font-bold text-navy">Pending Complaints</p>
                     <p className="text-2xl font-black text-coral mt-1">{metrics.pending_complaints_count}</p>
                   </div>
@@ -341,7 +341,7 @@ export default function AdminPanelPage() {
               </div>
 
               <form onSubmit={handleSaveSubConfig} className="space-y-6">
-                <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10 space-y-4">
+                <div className="p-4 rounded-2xl bg-paper/40 border border-navy/10 space-y-4">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-navy">Household Plans Configuration</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
@@ -354,7 +354,7 @@ export default function AdminPanelPage() {
                         onChange={(e) => setSubConfig({ ...subConfig, free_member_limit: parseInt(e.target.value || "1") })}
                         className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
                       />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">1 individual user only</p>
+                      <p className="text-[10px] text-mist-dark mt-1">1 individual user only</p>
                     </div>
 
                     <div>
@@ -366,7 +366,7 @@ export default function AdminPanelPage() {
                         onChange={(e) => setSubConfig({ ...subConfig, basic_plus_price_inr: parseInt(e.target.value || "49") })}
                         className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
                       />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">₹49 / year (3 members max)</p>
+                      <p className="text-[10px] text-mist-dark mt-1">₹49 / year (3 members max)</p>
                     </div>
 
                     <div>
@@ -378,12 +378,12 @@ export default function AdminPanelPage() {
                         onChange={(e) => setSubConfig({ ...subConfig, premium_price_inr: parseInt(e.target.value || "99") })}
                         className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
                       />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">₹99 / 6 months (unlimited)</p>
+                      <p className="text-[10px] text-mist-dark mt-1">₹99 / 6 months (unlimited)</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10 space-y-4">
+                <div className="p-4 rounded-2xl bg-paper/40 border border-navy/10 space-y-4">
                   <h4 className="font-bold text-xs uppercase tracking-wider text-navy">Marketplace Membership Policy</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -395,7 +395,7 @@ export default function AdminPanelPage() {
                         onChange={(e) => setSubConfig({ ...subConfig, marketplace_membership_price_inr: parseInt(e.target.value || "20") })}
                         className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
                       />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">Default is ₹20 for 6 months</p>
+                      <p className="text-[10px] text-mist-dark mt-1">Default is ₹20 for 6 months</p>
                     </div>
 
                     <div>
@@ -407,7 +407,7 @@ export default function AdminPanelPage() {
                         onChange={(e) => setSubConfig({ ...subConfig, marketplace_membership_validity_months: parseInt(e.target.value || "6") })}
                         className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
                       />
-                      <p className="text-[10px] text-mutedblue-dark mt-1">Six months validity</p>
+                      <p className="text-[10px] text-mist-dark mt-1">Six months validity</p>
                     </div>
                   </div>
                 </div>
@@ -460,14 +460,14 @@ export default function AdminPanelPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold">
+                      <tr className="border-b border-paper text-mist-dark uppercase font-bold">
                         <th className="pb-2">Order ID</th>
                         <th className="pb-2">Plan</th>
                         <th className="pb-2">Amount</th>
                         <th className="pb-2">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-cream">
+                    <tbody className="divide-y divide-paper">
                       {financials.household_subscriptions.transactions.map((tx: any) => (
                         <tr key={tx.id}>
                           <td className="py-2.5 font-mono text-[11px]">{tx.razorpay_order_id}</td>
@@ -496,14 +496,14 @@ export default function AdminPanelPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold">
+                      <tr className="border-b border-paper text-mist-dark uppercase font-bold">
                         <th className="pb-2">Order ID</th>
                         <th className="pb-2">Price</th>
                         <th className="pb-2">Status</th>
                         <th className="pb-2">Validity End</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-cream">
+                    <tbody className="divide-y divide-paper">
                       {financials.marketplace_memberships.memberships.map((m: any) => (
                         <tr key={m.id}>
                           <td className="py-2.5 font-mono text-[11px]">{m.razorpay_order_id}</td>
@@ -513,7 +513,7 @@ export default function AdminPanelPage() {
                               {m.status}
                             </span>
                           </td>
-                          <td className="py-2.5 text-mutedblue-dark">
+                          <td className="py-2.5 text-mist-dark">
                             {new Date(m.current_period_end).toLocaleDateString()}
                           </td>
                         </tr>
@@ -563,10 +563,10 @@ export default function AdminPanelPage() {
               {/* Community List */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 {communitiesList.map((c) => (
-                  <div key={c.id} className="p-4 rounded-2xl bg-cream/40 border border-navy/10 flex items-center justify-between">
+                  <div key={c.id} className="p-4 rounded-2xl bg-paper/40 border border-navy/10 flex items-center justify-between">
                     <div>
                       <p className="font-bold text-xs text-navy">{c.name}</p>
-                      <p className="text-[10px] text-mutedblue-dark">{c.city} • Created {new Date(c.created_at).toLocaleDateString()}</p>
+                      <p className="text-[10px] text-mist-dark">{c.city} • Created {new Date(c.created_at).toLocaleDateString()}</p>
                     </div>
                     <button
                       onClick={() => handleDeleteCommunity(c.id)}
@@ -586,19 +586,19 @@ export default function AdminPanelPage() {
               <h3 className="font-bold text-base text-navy">Registered Flats & Identity Hierarchy</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {householdsList.map((h) => (
-                  <div key={h.id} className="p-4 rounded-2xl bg-cream-light border border-cream space-y-2">
+                  <div key={h.id} className="p-4 rounded-2xl bg-paper-light border border-paper space-y-2">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm text-navy">{h.full_identity || h.name}</h4>
                       <span className="font-mono px-2 py-0.5 rounded bg-white text-[10px] font-bold text-coral">
                         {h.invite_code}
                       </span>
                     </div>
-                    <p className="text-xs text-mutedblue-dark">
+                    <p className="text-xs text-mist-dark">
                       Community: {h.community_name || "SRM Area"} • Building: {h.building || "—"} • Flat: {h.flat_number || "—"}
                     </p>
-                    <div className="flex items-center justify-between text-xs pt-2 border-t border-cream">
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-paper">
                       <span className="text-navy font-semibold">{h.members_count} Residents</span>
-                      <span className="text-mutedblue-dark">Owner: {h.owner?.full_name}</span>
+                      <span className="text-mist-dark">Owner: {h.owner?.full_name}</span>
                     </div>
                   </div>
                 ))}
@@ -611,12 +611,12 @@ export default function AdminPanelPage() {
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-base text-navy">User Accounts</h3>
-                <span className="text-xs text-mutedblue-dark">{usersList.length} total</span>
+                <span className="text-xs text-mist-dark">{usersList.length} total</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold">
+                    <tr className="border-b border-paper text-mist-dark uppercase font-bold">
                       <th className="pb-2">Name</th>
                       <th className="pb-2">Email</th>
                       <th className="pb-2">Role</th>
@@ -624,11 +624,11 @@ export default function AdminPanelPage() {
                       <th className="pb-2 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-cream">
+                  <tbody className="divide-y divide-paper">
                     {usersList.map((u) => (
                       <tr key={u.id}>
                         <td className="py-2.5 font-bold text-navy">{u.full_name}</td>
-                        <td className="py-2.5 text-mutedblue-dark">{u.email}</td>
+                        <td className="py-2.5 text-mist-dark">{u.email}</td>
                         <td className="py-2.5 uppercase font-mono text-[10px]">{u.role}</td>
                         <td className="py-2.5">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
@@ -666,12 +666,12 @@ export default function AdminPanelPage() {
           {activeSection === "moderation" && (
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
               <h3 className="font-bold text-base text-navy">Marketplace Listings Moderation</h3>
-              <div className="divide-y divide-cream">
+              <div className="divide-y divide-paper">
                 {moderationList.map((m) => (
                   <div key={m.id} className="py-3.5 flex items-center justify-between">
                     <div>
                       <h4 className="font-bold text-sm text-navy">{m.title}</h4>
-                      <p className="text-xs text-mutedblue-dark">
+                      <p className="text-xs text-mist-dark">
                         ₹{m.selling_price_paise / 100} • Status: <span className="font-bold uppercase text-coral">{m.status}</span>
                       </p>
                     </div>
@@ -701,12 +701,12 @@ export default function AdminPanelPage() {
               <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
                 <h3 className="font-bold text-base text-navy">Custom Bill Category Usage</h3>
                 <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
-                    <p className="text-mutedblue-dark font-bold">Total Bills</p>
+                  <div className="p-4 rounded-2xl bg-paper/40 border border-navy/10">
+                    <p className="text-mist-dark font-bold">Total Bills</p>
                     <p className="text-2xl font-black text-navy mt-1">{analytics.total_bills}</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
-                    <p className="text-mutedblue-dark font-bold">Custom Category Bills</p>
+                  <div className="p-4 rounded-2xl bg-paper/40 border border-navy/10">
+                    <p className="text-mist-dark font-bold">Custom Category Bills</p>
                     <p className="text-2xl font-black text-coral mt-1">{analytics.custom_bill_count}</p>
                   </div>
                 </div>
@@ -715,10 +715,10 @@ export default function AdminPanelPage() {
                   <p className="text-xs font-bold text-navy mb-2">Custom Categories Created by Users:</p>
                   <div className="flex flex-wrap gap-2">
                     {analytics.custom_categories_used.length === 0 ? (
-                      <span className="text-xs text-mutedblue-dark">No custom categories used yet.</span>
+                      <span className="text-xs text-mist-dark">No custom categories used yet.</span>
                     ) : (
                       analytics.custom_categories_used.map((cat: string, idx: number) => (
-                        <span key={idx} className="px-3 py-1 rounded-full bg-cream font-bold text-xs text-coral">
+                        <span key={idx} className="px-3 py-1 rounded-full bg-paper font-bold text-xs text-coral">
                           {cat}
                         </span>
                       ))
@@ -730,16 +730,16 @@ export default function AdminPanelPage() {
               <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
                 <h3 className="font-bold text-base text-navy">Chore & Task Assignment Delegation</h3>
                 <div className="grid grid-cols-3 gap-4 text-xs">
-                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
-                    <p className="text-mutedblue-dark font-bold">Total Tasks</p>
+                  <div className="p-4 rounded-2xl bg-paper/40 border border-navy/10">
+                    <p className="text-mist-dark font-bold">Total Tasks</p>
                     <p className="text-2xl font-black text-navy mt-1">{analytics.total_tasks}</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
-                    <p className="text-mutedblue-dark font-bold">Pending Tasks</p>
+                  <div className="p-4 rounded-2xl bg-paper/40 border border-navy/10">
+                    <p className="text-mist-dark font-bold">Pending Tasks</p>
                     <p className="text-2xl font-black text-amber-500 mt-1">{analytics.pending_tasks}</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
-                    <p className="text-mutedblue-dark font-bold">Completed Tasks</p>
+                  <div className="p-4 rounded-2xl bg-paper/40 border border-navy/10">
+                    <p className="text-mist-dark font-bold">Completed Tasks</p>
                     <p className="text-2xl font-black text-emerald-600 mt-1">{analytics.completed_tasks}</p>
                   </div>
                 </div>
@@ -751,17 +751,17 @@ export default function AdminPanelPage() {
           {activeSection === "reports" && (
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
               <h3 className="font-bold text-base text-navy">User Reports & Complaints</h3>
-              <div className="divide-y divide-cream text-xs">
+              <div className="divide-y divide-paper text-xs">
                 {reportsList.length === 0 ? (
-                  <p className="py-6 text-center text-mutedblue-dark">No outstanding reports.</p>
+                  <p className="py-6 text-center text-mist-dark">No outstanding reports.</p>
                 ) : (
                   reportsList.map((r) => (
                     <div key={r.id} className="py-3 flex justify-between items-center">
                       <div>
                         <p className="font-bold text-navy">{r.reason}</p>
-                        <p className="text-mutedblue-dark">{r.details}</p>
+                        <p className="text-mist-dark">{r.details}</p>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-cream">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-paper">
                         {r.status}
                       </span>
                     </div>
@@ -775,14 +775,14 @@ export default function AdminPanelPage() {
           {activeSection === "logs" && (
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
               <h3 className="font-bold text-base text-navy">Administrative Security Audit Trail</h3>
-              <div className="divide-y divide-cream text-xs">
+              <div className="divide-y divide-paper text-xs">
                 {auditLogs.map((log) => (
                   <div key={log.id} className="py-3 flex justify-between items-start">
                     <div>
                       <p className="font-bold font-mono text-coral text-[11px]">{log.action}</p>
                       <p className="text-navy-secondary mt-0.5">{log.details}</p>
                     </div>
-                    <span className="text-[10px] text-mutedblue-dark">
+                    <span className="text-[10px] text-mist-dark">
                       {new Date(log.created_at).toLocaleString()}
                     </span>
                   </div>

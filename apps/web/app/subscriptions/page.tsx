@@ -146,7 +146,7 @@ export default function SubscriptionsPage() {
   const mktExpiresAt = mktMembership?.membership?.expires_at ? new Date(mktMembership.membership.expires_at) : null;
 
   return (
-    <div className="min-h-screen bg-cream text-navy flex flex-col">
+    <div className="min-h-screen bg-paper text-navy flex flex-col">
       <Navbar />
 
       {toastMsg && (
@@ -178,7 +178,7 @@ export default function SubscriptionsPage() {
                 <ShieldCheck className="w-6 h-6 text-coral" />
               </div>
               <div>
-                <p className="text-xs text-mutedblue-dark font-medium">Logged in as {currentUser.full_name} ({currentUser.email})</p>
+                <p className="text-xs text-mist-dark font-medium">Logged in as {currentUser.full_name} ({currentUser.email})</p>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   <span className="text-xs font-bold text-navy">
                     Household Status:
@@ -188,12 +188,12 @@ export default function SubscriptionsPage() {
                       ? "bg-coral text-white" 
                       : currentHouseholdTier === "basic_plus" 
                       ? "bg-coral-light text-coral" 
-                      : "bg-cream text-navy"
+                      : "bg-paper text-navy"
                   }`}>
                     {currentHouseholdTier === "premium" ? "Premium Household — Active" : currentHouseholdTier === "basic_plus" ? "Basic Plus — Active" : "Free Plan — Active"}
                   </span>
                   {householdSubEndDate && currentHouseholdTier !== "free" && (
-                    <span className="text-[11px] text-mutedblue-dark">
+                    <span className="text-[11px] text-mist-dark">
                       (Valid until {householdSubEndDate.toLocaleDateString()})
                     </span>
                   )}
@@ -201,13 +201,13 @@ export default function SubscriptionsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-cream">
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-paper">
               <div className="text-right">
                 <span className="text-xs font-bold text-navy">
                   Marketplace Status:
                 </span>{" "}
                 <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase ${
-                  hasActiveMkt ? "bg-emerald-100 text-emerald-800" : "bg-cream text-mutedblue-dark"
+                  hasActiveMkt ? "bg-emerald-100 text-emerald-800" : "bg-paper text-mist-dark"
                 }`}>
                   {hasActiveMkt ? `Active until ${mktExpiresAt ? mktExpiresAt.toLocaleDateString() : "6 Months"}` : "Free Browsing Only"}
                 </span>
@@ -236,7 +236,7 @@ export default function SubscriptionsPage() {
             }`}>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cream text-navy">
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-paper text-navy">
                     1 User
                   </span>
                   {currentHouseholdTier === "free" && (
@@ -247,18 +247,18 @@ export default function SubscriptionsPage() {
                 </div>
 
                 <h3 className="font-extrabold text-xl text-navy">Free Plan</h3>
-                <p className="text-xs text-mutedblue-dark mt-1">One individual user only</p>
+                <p className="text-xs text-mist-dark mt-1">One individual user only</p>
 
                 <div className="my-5">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-black text-navy">₹0</span>
-                    <span className="text-xs font-bold text-mutedblue-dark">/ Free Forever</span>
+                    <span className="text-xs font-bold text-mist-dark">/ Free Forever</span>
                   </div>
-                  <p className="text-[11px] text-mutedblue-dark mt-1 font-medium">No credit card required</p>
+                  <p className="text-[11px] text-mist-dark mt-1 font-medium">No credit card required</p>
                 </div>
 
                 <div className="space-y-3 text-xs text-navy">
-                  <div className="font-bold text-[11px] uppercase tracking-wider text-mutedblue-dark">Features Included:</div>
+                  <div className="font-bold text-[11px] uppercase tracking-wider text-mist-dark">Features Included:</div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                     <span>Create an individual account</span>
@@ -276,7 +276,7 @@ export default function SubscriptionsPage() {
                     <span>View publicly available product listings &amp; details</span>
                   </div>
 
-                  <div className="pt-3 border-t border-cream space-y-1.5 text-[11px] text-mutedblue-dark">
+                  <div className="pt-3 border-t border-paper space-y-1.5 text-[11px] text-mist-dark">
                     <p className="font-bold text-navy">Household Restrictions:</p>
                     <p className="flex items-center gap-1.5 text-navy-secondary">
                       <span className="w-1.5 h-1.5 rounded-full bg-coral"></span> Cannot create or join a household
@@ -291,10 +291,10 @@ export default function SubscriptionsPage() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-cream">
+              <div className="mt-8 pt-4 border-t border-paper">
                 <button
                   disabled
-                  className="w-full py-3 rounded-2xl bg-cream text-navy font-bold text-xs cursor-default"
+                  className="w-full py-3 rounded-2xl bg-paper text-navy font-bold text-xs cursor-default"
                 >
                   {currentHouseholdTier === "free" ? "Current Free Plan" : "Get Started Free"}
                 </button>
@@ -322,18 +322,18 @@ export default function SubscriptionsPage() {
                 </div>
 
                 <h3 className="font-extrabold text-xl text-navy">Basic Plus</h3>
-                <p className="text-xs text-mutedblue-dark mt-1">Up to 3 total household members, including owner</p>
+                <p className="text-xs text-mist-dark mt-1">Up to 3 total household members, including owner</p>
 
                 <div className="my-5">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-black text-coral">₹49</span>
                     <span className="text-xs font-bold text-navy-secondary">/ 1 Year (12 Months)</span>
                   </div>
-                  <p className="text-[11px] text-mutedblue-dark mt-1 font-medium">Just ₹4.08 per month</p>
+                  <p className="text-[11px] text-mist-dark mt-1 font-medium">Just ₹4.08 per month</p>
                 </div>
 
                 <div className="space-y-3 text-xs text-navy font-medium">
-                  <div className="font-bold text-[11px] uppercase tracking-wider text-mutedblue-dark">Everything you need:</div>
+                  <div className="font-bold text-[11px] uppercase tracking-wider text-mist-dark">Everything you need:</div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-coral shrink-0 mt-0.5" />
                     <span>Create one household &amp; add up to 2 additional members (3 total)</span>
@@ -365,7 +365,7 @@ export default function SubscriptionsPage() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-cream">
+              <div className="mt-8 pt-4 border-t border-paper">
                 <button
                   onClick={() => handleHouseholdCheckout("basic_plus")}
                   disabled={checkingOut === "basic_plus"}
@@ -398,18 +398,18 @@ export default function SubscriptionsPage() {
                 </div>
 
                 <h3 className="font-extrabold text-xl text-navy">Premium Household</h3>
-                <p className="text-xs text-mutedblue-dark mt-1">Unlimited household members</p>
+                <p className="text-xs text-mist-dark mt-1">Unlimited household members</p>
 
                 <div className="my-5">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-black text-navy">₹99</span>
                     <span className="text-xs font-bold text-navy-secondary">/ 6 Months</span>
                   </div>
-                  <p className="text-[11px] text-mutedblue-dark mt-1 font-medium">Flatmates join completely free</p>
+                  <p className="text-[11px] text-mist-dark mt-1 font-medium">Flatmates join completely free</p>
                 </div>
 
                 <div className="space-y-3 text-xs text-navy font-medium">
-                  <div className="font-bold text-[11px] uppercase tracking-wider text-mutedblue-dark">All Basic Plus Features, Plus:</div>
+                  <div className="font-bold text-[11px] uppercase tracking-wider text-mist-dark">All Basic Plus Features, Plus:</div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                     <span><strong>Unlimited household members</strong> for six months</span>
@@ -437,7 +437,7 @@ export default function SubscriptionsPage() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-cream">
+              <div className="mt-8 pt-4 border-t border-paper">
                 <button
                   onClick={() => handleHouseholdCheckout("premium")}
                   disabled={checkingOut === "premium"}
@@ -477,7 +477,7 @@ export default function SubscriptionsPage() {
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-navy">6-Month Marketplace Membership</h3>
-                    <p className="text-xs text-mutedblue-dark font-medium">Independent buyer &amp; seller pass</p>
+                    <p className="text-xs text-mist-dark font-medium">Independent buyer &amp; seller pass</p>
                   </div>
                 </div>
 
@@ -512,7 +512,7 @@ export default function SubscriptionsPage() {
                   </div>
                 </div>
 
-                <div className="pt-2 text-[11px] text-mutedblue-dark bg-cream/30 p-3 rounded-xl border border-navy/5">
+                <div className="pt-2 text-[11px] text-mist-dark bg-paper/30 p-3 rounded-xl border border-navy/5">
                   <strong>Important:</strong> Household Premium does not include Marketplace Membership, and Marketplace Membership does not include Household Premium. Both are separate offerings.
                 </div>
               </div>
@@ -524,9 +524,9 @@ export default function SubscriptionsPage() {
                   </span>
                   <div className="mt-3 flex items-baseline justify-center gap-1">
                     <span className="text-5xl font-black text-white">₹20</span>
-                    <span className="text-xs text-mutedblue">/ 6 Months</span>
+                    <span className="text-xs text-mist">/ 6 Months</span>
                   </div>
-                  <p className="text-[11px] text-mutedblue mt-1">Unlimited buying &amp; selling</p>
+                  <p className="text-[11px] text-mist mt-1">Unlimited buying &amp; selling</p>
                 </div>
 
                 {hasActiveMkt ? (
@@ -534,7 +534,7 @@ export default function SubscriptionsPage() {
                     <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center justify-center gap-1.5 border border-emerald-500/30">
                       <ShieldCheck className="w-4 h-4" /> Active Membership
                     </div>
-                    <p className="text-[11px] text-mutedblue">
+                    <p className="text-[11px] text-mist">
                       Valid until: {mktExpiresAt ? mktExpiresAt.toLocaleDateString() : "6 Months"}
                     </p>
                     <button
@@ -555,7 +555,7 @@ export default function SubscriptionsPage() {
                     {checkingOut === "marketplace_membership" ? "Activating..." : "Get Marketplace Membership"}
                   </button>
                 )}
-                <p className="text-[10px] text-mutedblue">Secured with Razorpay verification</p>
+                <p className="text-[10px] text-mist">Secured with Razorpay verification</p>
               </div>
             </div>
           </div>
@@ -567,7 +567,7 @@ export default function SubscriptionsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
               <thead>
-                <tr className="border-b border-cream-dark text-mutedblue-dark uppercase font-bold text-[10px]">
+                <tr className="border-b border-paper-dark text-mist-dark uppercase font-bold text-[10px]">
                   <th className="py-3 px-3">Subscription</th>
                   <th className="py-3 px-3">Price</th>
                   <th className="py-3 px-3">Duration</th>
@@ -576,14 +576,14 @@ export default function SubscriptionsPage() {
                   <th className="py-3 px-3">Marketplace Buying/Selling</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-cream font-medium text-navy">
+              <tbody className="divide-y divide-paper font-medium text-navy">
                 <tr>
                   <td className="py-3 px-3 font-bold">Free Plan</td>
                   <td className="py-3 px-3">₹0</td>
                   <td className="py-3 px-3">Forever</td>
                   <td className="py-3 px-3">1 individual user</td>
-                  <td className="py-3 px-3 text-mutedblue-dark">Restricted</td>
-                  <td className="py-3 px-3 text-mutedblue-dark">Browsing Only</td>
+                  <td className="py-3 px-3 text-mist-dark">Restricted</td>
+                  <td className="py-3 px-3 text-mist-dark">Browsing Only</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-3 font-bold text-coral">Basic Plus</td>
@@ -591,7 +591,7 @@ export default function SubscriptionsPage() {
                   <td className="py-3 px-3">1 Year</td>
                   <td className="py-3 px-3">3 household members total</td>
                   <td className="py-3 px-3 text-emerald-600 font-bold">Full Access</td>
-                  <td className="py-3 px-3 text-mutedblue-dark">Browsing (Requires Mkt Pass)</td>
+                  <td className="py-3 px-3 text-mist-dark">Browsing (Requires Mkt Pass)</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-3 font-bold">Premium Household</td>
@@ -599,14 +599,14 @@ export default function SubscriptionsPage() {
                   <td className="py-3 px-3">6 Months</td>
                   <td className="py-3 px-3">Unlimited household members</td>
                   <td className="py-3 px-3 text-emerald-600 font-bold">Full Access + Unlimited</td>
-                  <td className="py-3 px-3 text-mutedblue-dark">Browsing (Requires Mkt Pass)</td>
+                  <td className="py-3 px-3 text-mist-dark">Browsing (Requires Mkt Pass)</td>
                 </tr>
                 <tr className="bg-coral/5">
                   <td className="py-3 px-3 font-bold text-coral">Marketplace Membership</td>
                   <td className="py-3 px-3 font-bold text-coral">₹20</td>
                   <td className="py-3 px-3">6 Months</td>
                   <td className="py-3 px-3">Individual user access</td>
-                  <td className="py-3 px-3 text-mutedblue-dark">Independent</td>
+                  <td className="py-3 px-3 text-mist-dark">Independent</td>
                   <td className="py-3 px-3 text-emerald-600 font-bold">Unlimited Buying &amp; Selling</td>
                 </tr>
               </tbody>
@@ -615,7 +615,7 @@ export default function SubscriptionsPage() {
         </div>
 
         {/* SECURITY & PAYMENT NOTICE */}
-        <div className="p-6 rounded-3xl bg-cream/40 border border-navy/10 flex items-start gap-4 max-w-5xl mx-auto">
+        <div className="p-6 rounded-3xl bg-paper/40 border border-navy/10 flex items-start gap-4 max-w-5xl mx-auto">
           <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0 mt-1" />
           <div className="space-y-1 text-xs">
             <h4 className="font-bold text-navy">Server-Side Payment Verification &amp; Local Test Simulation</h4>

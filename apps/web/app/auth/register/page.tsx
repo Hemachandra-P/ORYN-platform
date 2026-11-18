@@ -51,7 +51,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-paper flex flex-col">
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -76,14 +76,14 @@ export default function RegisterPage() {
                 Full Name
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-mutedblue-dark absolute left-3.5 top-3.5" />
+                <User className="w-4 h-4 text-mist-dark absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Rahul Sharma"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-cream/30 text-navy"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-paper/30 text-navy"
                 />
               </div>
             </div>
@@ -93,14 +93,14 @@ export default function RegisterPage() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-mutedblue-dark absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-mist-dark absolute left-3.5 top-3.5" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-cream/30 text-navy"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-paper/30 text-navy"
                 />
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function RegisterPage() {
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-mutedblue-dark absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-mist-dark absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-cream/30 text-navy"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-paper/30 text-navy"
                 />
               </div>
             </div>
@@ -128,13 +128,13 @@ export default function RegisterPage() {
                 City / Campus Area
               </label>
               <div className="relative">
-                <MapPin className="w-4 h-4 text-mutedblue-dark absolute left-3.5 top-3.5" />
+                <MapPin className="w-4 h-4 text-mist-dark absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Chennai, Kattankulathur, etc."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-cream/30 text-navy"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-paper/30 text-navy"
                 />
               </div>
             </div>

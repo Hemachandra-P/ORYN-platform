@@ -81,13 +81,13 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream text-navy flex flex-col">
+    <div className="min-h-screen bg-paper text-navy flex flex-col">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 flex flex-col">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/marketplace" className="p-2 rounded-xl bg-white border border-navy/10 text-navy hover:bg-cream">
+            <Link href="/marketplace" className="p-2 rounded-xl bg-white border border-navy/10 text-navy hover:bg-paper">
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
@@ -99,14 +99,14 @@ export default function MessagesPage() {
 
         <div className="flex-1 bg-white rounded-3xl shadow-card border border-navy/5 overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[550px]">
           {/* CONVERSATION LIST (4 cols) */}
-          <div className="md:col-span-4 border-r border-cream flex flex-col">
-            <div className="p-4 border-b border-cream bg-cream-light">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-mutedblue-dark">Conversations</h2>
+          <div className="md:col-span-4 border-r border-paper flex flex-col">
+            <div className="p-4 border-b border-paper bg-paper-light">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-mist-dark">Conversations</h2>
             </div>
 
-            <div className="flex-1 overflow-y-auto divide-y divide-cream">
+            <div className="flex-1 overflow-y-auto divide-y divide-paper">
               {conversations.length === 0 ? (
-                <div className="text-center py-16 text-mutedblue-dark text-xs p-4">
+                <div className="text-center py-16 text-mist-dark text-xs p-4">
                   No active inquiries yet. Message a seller on any listing.
                 </div>
               ) : (
@@ -118,7 +118,7 @@ export default function MessagesPage() {
                       key={c.id}
                       onClick={() => selectConversation(c)}
                       className={`w-full text-left p-4 transition-colors flex items-start gap-3 ${
-                        isSelected ? "bg-cream/60 border-l-4 border-coral" : "hover:bg-cream/30"
+                        isSelected ? "bg-paper/60 border-l-4 border-coral" : "hover:bg-paper/30"
                       }`}
                     >
                       <div className="w-10 h-10 rounded-full bg-navy text-white font-bold text-xs flex items-center justify-center shrink-0">
@@ -129,7 +129,7 @@ export default function MessagesPage() {
                           <p className="font-bold text-sm text-navy truncate">
                             {otherPerson?.full_name || "Community Member"}
                           </p>
-                          <span className="text-[10px] text-mutedblue-dark shrink-0">
+                          <span className="text-[10px] text-mist-dark shrink-0">
                             {new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
@@ -149,7 +149,7 @@ export default function MessagesPage() {
             {activeConv ? (
               <>
                 {/* Chat Header with Listing Context */}
-                <div className="p-4 border-b border-cream bg-cream-light flex items-center justify-between">
+                <div className="p-4 border-b border-paper bg-paper-light flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-coral/15 text-coral font-bold text-xs flex items-center justify-center">
                       {(activeConv.buyer_id === currentUser?.id ? activeConv.seller : activeConv.buyer)?.full_name?.slice(0, 2).toUpperCase() || "ME"}
@@ -177,7 +177,7 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Log */}
-                <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-cream/20">
+                <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-paper/20">
                   {messages.map((m) => {
                     const isMe = m.sender_id === currentUser?.id;
                     return (
@@ -194,7 +194,7 @@ export default function MessagesPage() {
                         >
                           {m.content}
                         </div>
-                        <span className="text-[10px] text-mutedblue-dark mt-1 px-1">
+                        <span className="text-[10px] text-mist-dark mt-1 px-1">
                           {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </div>
@@ -203,13 +203,13 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Input */}
-                <form onSubmit={handleSendMessage} className="p-4 border-t border-cream bg-white flex gap-2">
+                <form onSubmit={handleSendMessage} className="p-4 border-t border-paper bg-white flex gap-2">
                   <input
                     type="text"
                     value={newMsg}
                     onChange={(e) => setNewMsg(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none text-navy"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none text-navy"
                   />
                   <button
                     type="submit"
@@ -220,7 +220,7 @@ export default function MessagesPage() {
                 </form>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-mutedblue-dark text-sm">
+              <div className="flex-1 flex items-center justify-center text-mist-dark text-sm">
                 Select a conversation to start messaging
               </div>
             )}

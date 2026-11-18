@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import { 
+import { motion, AnimatePresence } from "framer-motion";
+import {
   Receipt, ShoppingCart, CheckSquare, Plus, 
   Users, CreditCard, ArrowUpRight, ArrowDownLeft, Clock, 
   CheckCircle, AlertCircle, Send, Copy, UserCheck, Trash2, 
@@ -433,38 +434,46 @@ export default function HouseholdHubPage() {
   const isOwner = activeHousehold && currentUser && activeHousehold.owner_id === currentUser.id;
 
   return (
-    <div className="min-h-screen bg-cream text-navy flex flex-col">
+    <div className="min-h-screen bg-paper text-navy flex flex-col">
       <Navbar />
 
-      {feedback && (
-        <div className="fixed bottom-6 right-6 z-50 bg-navy text-white px-5 py-3 rounded-2xl shadow-elevated border border-coral text-sm flex items-center gap-2 animate-bounce">
-          <Sparkles className="w-4 h-4 text-coral" />
-          <span>{feedback}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {feedback && (
+          <motion.div
+            role="status"
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="fixed bottom-6 right-6 z-50 bg-navy text-white pl-4 pr-5 py-3 rounded-xl shadow-elevated text-sm flex items-center gap-2.5 max-w-sm"
+          >
+            <span className="w-1.5 h-5 rounded-full bg-coral shrink-0" />
+            <span>{feedback}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* TOP BAR / FLAT SWITCHER */}
-      <div className="bg-white border-b border-cream-dark px-4 sm:px-6 lg:px-8 py-4">
+      <div className="bg-white border-b border-navy/10 px-4 sm:px-6 lg:px-8 py-5">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-navy text-white flex items-center justify-center font-bold text-sm shadow-md">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-paper border border-navy/10 text-navy flex items-center justify-center">
               <Building className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold text-navy">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="font-display text-2xl font-extrabold text-navy">
                   {activeHousehold?.full_identity || activeHousehold?.name || "Household Hub"}
                 </h1>
                 {capacity?.is_premium ? (
-                  <span className="px-2 py-0.5 rounded-full bg-coral-light text-coral text-[10px] font-black uppercase">
+                  <span className="px-2 py-0.5 rounded-full bg-coral-light text-coral text-[11px] font-bold uppercase">
                     Premium Flat (Unlimited)
                   </span>
                 ) : capacity?.plan_id === "basic_plus" ? (
-                  <span className="px-2 py-0.5 rounded-full bg-coral/10 text-coral text-[10px] font-black uppercase">
+                  <span className="px-2 py-0.5 rounded-full bg-coral/10 text-coral text-[11px] font-bold uppercase">
                     Basic Plus ({capacity?.current_members_count || 1}/3 members)
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-cream text-navy text-[10px] font-black uppercase">
+                  <span className="px-2 py-0.5 rounded-full bg-paper text-navy text-[11px] font-bold uppercase">
                     Household ({capacity?.current_members_count || 1}/{capacity?.max_allowed || 3} members)
                   </span>
                 )}
@@ -485,7 +494,7 @@ export default function HouseholdHubPage() {
                   const selected = households.find((h) => h.id === e.target.value);
                   if (selected) selectHousehold(selected);
                 }}
-                className="px-3 py-2 rounded-xl border border-navy/15 text-xs font-bold text-navy bg-cream/30 focus:outline-none"
+                className="px-3 py-2 rounded-xl border border-navy/15 text-xs font-bold text-navy bg-paper/30 focus:outline-none"
               >
                 {households.map((h) => (
                   <option key={h.id} value={h.id}>
@@ -497,14 +506,14 @@ export default function HouseholdHubPage() {
 
             <button
               onClick={() => setShowJoinModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-cream hover:bg-navy/10 text-xs font-bold text-navy border border-navy/15 transition-all flex items-center gap-1"
+              className="px-3.5 py-2 rounded-xl bg-paper hover:bg-navy/10 text-xs font-bold text-navy border border-navy/15 transition-all flex items-center gap-1"
             >
               <KeyRound className="w-3.5 h-3.5" /> Join Flat
             </button>
 
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-coral hover:bg-coral-hover text-xs font-bold text-white shadow-md transition-all flex items-center gap-1"
+              className="px-3.5 py-2 rounded-xl bg-coral hover:bg-coral-hover text-xs font-bold text-white  transition-all flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" /> New Flat
             </button>
@@ -514,10 +523,10 @@ export default function HouseholdHubPage() {
 
       {/* CAPACITY UPGRADE BANNER IF LIMIT REACHED */}
       {capacity && !capacity.can_add_member && (
-        <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-3">
+        <div className="bg-sun-light border-b border-sun px-4 py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-[#8A6100] shrink-0" />
               <span className="font-bold text-navy">
                 Your household has reached its maximum of {capacity.free_limit} members.
               </span>
@@ -528,7 +537,7 @@ export default function HouseholdHubPage() {
             {isOwner && (
               <Link
                 href="/subscriptions"
-                className="px-3 py-1 bg-coral text-white font-bold rounded-lg shadow-sm hover:bg-coral-hover text-[11px]"
+                className="px-3 py-1 bg-coral text-white font-bold rounded-lg shadow-sm hover:bg-coral-hover text-xs"
               >
                 Upgrade to Premium (₹99) &rarr;
               </Link>
@@ -539,8 +548,8 @@ export default function HouseholdHubPage() {
 
       {/* NAVIGATION TABS */}
       {activeHousehold && (
-        <div className="bg-white border-b border-cream-dark px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-6 overflow-x-auto py-3">
+        <div className="bg-white border-b border-navy/10 px-4 sm:px-6 lg:px-8 sticky top-16 z-40">
+          <div className="max-w-7xl mx-auto flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist">
             {[
               { id: "expenses", label: "Shared Expenses", icon: Receipt },
               { id: "bills", label: "Recurring Bills", icon: Clock },
@@ -553,15 +562,16 @@ export default function HouseholdHubPage() {
               return (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all ${
-                    isActive
-                      ? "bg-navy text-white shadow-sm"
-                      : "text-navy-secondary hover:text-navy hover:bg-cream"
+                  className={`relative flex items-center gap-2 px-4 py-4 text-sm font-medium whitespace-nowrap ${
+                    isActive ? "text-navy" : "text-mist-dark hover:text-navy"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-coral" : "text-mutedblue-dark"}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-coral" : ""}`} />
                   {tab.label}
+                  {isActive && <motion.span layoutId="hh-tab" className="absolute left-3 right-3 bottom-0 h-0.5 bg-coral rounded-full" transition={{ type: "spring", stiffness: 500, damping: 38 }} />}
                 </button>
               );
             })}
@@ -571,24 +581,24 @@ export default function HouseholdHubPage() {
 
       {/* EMPTY / ONBOARDING UPGRADE STATE IF NO ACTIVE HOUSEHOLD */}
       {!activeHousehold && (
-        <div className="max-w-3xl mx-auto my-12 p-8 bg-white rounded-3xl shadow-card border border-navy/10 text-center space-y-4">
-          <div className="w-16 h-16 rounded-3xl bg-coral/10 text-coral flex items-center justify-center mx-auto">
+        <div className="max-w-3xl mx-auto my-12 p-8 bg-white rounded-2xl shadow-card border border-navy/10 text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-coral/10 text-coral flex items-center justify-center mx-auto">
             <Building className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-navy">Welcome to Household Hub</h2>
+          <h2 className="text-2xl font-bold text-navy">Welcome to Household Hub</h2>
           <p className="text-xs sm:text-sm text-navy-secondary max-w-lg mx-auto leading-relaxed">
             Free Plan accounts can browse the community marketplace. To create a household, split bills, and manage tasks with flatmates, upgrade to <strong>Basic Plus (₹49/year)</strong> or <strong>Premium Household (₹99/6 months)</strong>.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             <Link
               href="/subscriptions"
-              className="px-6 py-3 rounded-2xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+              className="px-6 py-3 rounded-2xl bg-coral hover:bg-coral-hover text-white text-xs font-bold  transition-all flex items-center gap-2"
             >
               <Sparkles className="w-4 h-4" /> View Subscription Plans
             </Link>
             <button
               onClick={() => setShowJoinModal(true)}
-              className="px-5 py-3 rounded-2xl bg-cream hover:bg-navy/10 text-navy text-xs font-bold border border-navy/15 transition-all flex items-center gap-1.5"
+              className="px-5 py-3 rounded-2xl bg-paper hover:bg-navy/10 text-navy text-xs font-bold border border-navy/15 transition-all flex items-center gap-1.5"
             >
               <KeyRound className="w-3.5 h-3.5" /> Join Flat with Code
             </button>
@@ -607,7 +617,7 @@ export default function HouseholdHubPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
         {/* 1. SHARED EXPENSES TAB */}
         {activeTab === "expenses" && (
-          <div className="space-y-6">
+          <div className="space-y-6 page-enter">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-navy">Shared Ledger</h2>
@@ -615,7 +625,7 @@ export default function HouseholdHubPage() {
               </div>
               <button
                 onClick={() => setShowAddExpenseModal(true)}
-                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5"
+                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl  flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" /> Log Expense
               </button>
@@ -624,32 +634,35 @@ export default function HouseholdHubPage() {
             {/* Balances overview */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {balances.map((b) => (
-                <div key={b.user_id} className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-xs font-bold text-navy">{b.user_name}</p>
-                  <p className={`text-xl font-black mt-1 ${b.net_balance_paise >= 0 ? "text-emerald-600" : "text-coral"}`}>
+                <div key={b.user_id} className="bg-white p-5 rounded-2xl border border-navy/10">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-full bg-paper border border-navy/10 text-xs font-bold flex items-center justify-center">{(b.user_name || "?").charAt(0)}</span>
+                    <p className="text-sm font-semibold text-navy">{b.user_name}</p>
+                  </div>
+                  <p className={`font-mono text-2xl font-semibold tabular mt-4 ${b.net_balance_paise >= 0 ? "text-mint" : "text-coral"}`}>
                     {b.net_balance_paise >= 0 ? `+₹${(b.net_balance_paise / 100).toFixed(2)}` : `-₹${Math.abs(b.net_balance_paise / 100).toFixed(2)}`}
                   </p>
-                  <p className="text-[10px] text-mutedblue-dark mt-1">Paid ₹{(b.total_paid_paise / 100).toFixed(2)}</p>
+                  <p className="text-xs text-mist-dark mt-1">{b.net_balance_paise >= 0 ? "Is owed" : "Owes"} · paid ₹{(b.total_paid_paise / 100).toFixed(2)} so far</p>
                 </div>
               ))}
             </div>
 
             {/* Expense history table */}
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
+            <div className="bg-white rounded-2xl p-6 shadow-card border border-navy/5">
               <h3 className="font-bold text-sm text-navy mb-4">Recent Expenses</h3>
-              <div className="divide-y divide-cream text-xs">
+              <div className="divide-y divide-paper text-xs">
                 {expenses.length === 0 ? (
-                  <p className="py-6 text-center text-mutedblue-dark">No shared expenses logged yet.</p>
+                  <p className="py-6 text-center text-mist-dark">No shared expenses logged yet.</p>
                 ) : (
                   expenses.map((exp) => (
                     <div key={exp.id} className="py-3.5 flex items-center justify-between">
                       <div>
                         <p className="font-bold text-navy">{exp.title}</p>
-                        <p className="text-[11px] text-mutedblue-dark capitalize">
+                        <p className="text-xs text-mist-dark capitalize">
                           {exp.category} • Paid by {exp.paid_by?.full_name || "Flatmate"} • {new Date(exp.created_at).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="font-extrabold text-sm text-navy">
+                      <span className="font-mono font-semibold tabular text-sm text-navy">
                         ₹{(exp.total_amount_paise / 100).toFixed(2)}
                       </span>
                     </div>
@@ -662,7 +675,7 @@ export default function HouseholdHubPage() {
 
         {/* 2. RECURRING BILLS TAB (Supports Custom Bill Category) */}
         {activeTab === "bills" && (
-          <div className="space-y-6">
+          <div className="space-y-6 page-enter">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-navy">Recurring & Due Bills</h2>
@@ -670,39 +683,39 @@ export default function HouseholdHubPage() {
               </div>
               <button
                 onClick={() => setShowAddBillModal(true)}
-                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5"
+                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl  flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" /> Add Bill
               </button>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
-              <div className="divide-y divide-cream text-xs">
+            <div className="bg-white rounded-2xl p-6 shadow-card border border-navy/5">
+              <div className="divide-y divide-paper text-xs">
                 {bills.length === 0 ? (
-                  <p className="py-6 text-center text-mutedblue-dark">No bills added yet.</p>
+                  <p className="py-6 text-center text-mist-dark">No bills added yet.</p>
                 ) : (
                   bills.map((bill) => (
                     <div key={bill.id} className="py-3.5 flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded font-bold text-[10px] uppercase bg-cream text-coral">
+                          <span className="px-2 py-0.5 rounded font-bold text-[11px] uppercase bg-paper text-coral">
                             {bill.category === "other" && bill.custom_category ? bill.custom_category : bill.category}
                           </span>
                           <p className="font-bold text-navy">{bill.title}</p>
                         </div>
-                        <p className="text-[11px] text-mutedblue-dark mt-0.5">
+                        <p className="text-xs text-mist-dark mt-0.5">
                           Due: {new Date(bill.due_date).toLocaleDateString()} • {bill.recurrence}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-4">
-                        <span className="font-black text-sm text-navy">
+                        <span className="font-bold text-sm text-navy">
                           ₹{(bill.amount_paise / 100).toFixed(2)}
                         </span>
                         <button
                           onClick={() => toggleBillPaid(bill.id, bill.is_paid)}
-                          className={`px-3 py-1 rounded-xl font-bold text-[11px] transition-colors ${
-                            bill.is_paid ? "bg-emerald-100 text-emerald-700" : "bg-cream text-navy hover:bg-navy/10"
+                          className={`px-3 py-1 rounded-xl font-bold text-xs transition-colors ${
+                            bill.is_paid ? "bg-mint-light text-mint" : "bg-paper text-navy hover:bg-navy/10"
                           }`}
                         >
                           {bill.is_paid ? "Paid" : "Mark as Paid"}
@@ -718,7 +731,7 @@ export default function HouseholdHubPage() {
 
         {/* 3. SHOPPING LIST TAB */}
         {activeTab === "shopping" && (
-          <div className="space-y-6">
+          <div className="space-y-6 page-enter">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-navy">Shared Shopping List</h2>
@@ -726,16 +739,16 @@ export default function HouseholdHubPage() {
               </div>
               <button
                 onClick={() => setShowAddShoppingModal(true)}
-                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5"
+                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl  flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" /> Add Item
               </button>
             </div>
 
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
-              <div className="divide-y divide-cream text-xs">
+            <div className="bg-white rounded-2xl p-6 shadow-card border border-navy/5">
+              <div className="divide-y divide-paper text-xs">
                 {shoppingItems.length === 0 ? (
-                  <p className="py-6 text-center text-mutedblue-dark">Shopping list is currently empty.</p>
+                  <p className="py-6 text-center text-mist-dark">Shopping list is currently empty.</p>
                 ) : (
                   shoppingItems.map((item) => (
                     <div key={item.id} className="py-3 flex items-center justify-between">
@@ -746,12 +759,12 @@ export default function HouseholdHubPage() {
                           onChange={() => toggleShoppingPurchased(item.id, item.is_purchased)}
                           className="w-4 h-4 rounded text-coral"
                         />
-                        <span className={`font-semibold ${item.is_purchased ? "line-through text-mutedblue-dark" : "text-navy"}`}>
+                        <span className={`font-semibold ${item.is_purchased ? "line-through text-mist-dark" : "text-navy"}`}>
                           {item.item_name} ({item.quantity})
                         </span>
                       </div>
                       {item.estimated_price_paise && (
-                        <span className="text-mutedblue-dark">Est. ₹{item.estimated_price_paise / 100}</span>
+                        <span className="text-mist-dark">Est. ₹{item.estimated_price_paise / 100}</span>
                       )}
                     </div>
                   ))
@@ -763,7 +776,7 @@ export default function HouseholdHubPage() {
 
         {/* 4. CHORES & TASKS TAB (With Flatmate Assignment) */}
         {activeTab === "tasks" && (
-          <div className="space-y-6">
+          <div className="space-y-6 page-enter">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-navy">Flatmate Tasks & Chores</h2>
@@ -771,7 +784,7 @@ export default function HouseholdHubPage() {
               </div>
               <button
                 onClick={() => setShowAddTaskModal(true)}
-                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5"
+                className="px-4 py-2 bg-coral hover:bg-coral-hover text-white text-xs font-bold rounded-xl  flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" /> Assign Task
               </button>
@@ -779,17 +792,17 @@ export default function HouseholdHubPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {tasks.length === 0 ? (
-                <div className="col-span-full py-12 text-center text-mutedblue-dark bg-white rounded-3xl p-6">
+                <div className="col-span-full py-12 text-center text-mist-dark bg-white rounded-2xl p-6">
                   No tasks assigned yet. Click "Assign Task" to delegate chores to flatmates.
                 </div>
               ) : (
                 tasks.map((task) => (
-                  <div key={task.id} className="bg-white rounded-3xl p-5 shadow-card border border-navy/5 flex flex-col justify-between">
+                  <div key={task.id} className="bg-white rounded-2xl p-5 shadow-card border border-navy/5 flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <h4 className="font-bold text-sm text-navy">{task.title}</h4>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          task.status === "completed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
+                          task.status === "completed" ? "bg-mint-light text-mint" : "bg-sun-light text-[#8A6100]"
                         }`}>
                           {task.status}
                         </span>
@@ -800,12 +813,12 @@ export default function HouseholdHubPage() {
                       )}
 
                       {/* Assigned Flatmate Card */}
-                      <div className="p-2.5 rounded-xl bg-cream/40 border border-navy/5 flex items-center gap-2.5 mt-2">
+                      <div className="p-2.5 rounded-xl bg-paper/40 border border-navy/5 flex items-center gap-2.5 mt-2">
                         <div className="w-7 h-7 rounded-full bg-coral/20 text-coral font-bold text-xs flex items-center justify-center">
                           {task.assigned_to?.full_name?.slice(0, 2).toUpperCase() || "UN"}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] uppercase font-bold text-mutedblue-dark">Assigned To</p>
+                          <p className="text-[11px] uppercase font-bold text-mist-dark">Assigned To</p>
                           <p className="text-xs font-bold text-navy truncate">
                             {task.assigned_to?.full_name || "Unassigned"}
                           </p>
@@ -813,14 +826,14 @@ export default function HouseholdHubPage() {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-cream flex items-center justify-between text-xs">
-                      <span className="text-mutedblue-dark text-[11px]">
+                    <div className="mt-4 pt-3 border-t border-paper flex items-center justify-between text-xs">
+                      <span className="text-mist-dark text-xs">
                         {task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : "No due date"}
                       </span>
                       <button
                         onClick={() => toggleTaskStatus(task.id, task.status)}
-                        className={`px-3 py-1 rounded-xl font-bold text-[11px] ${
-                          task.status === "completed" ? "bg-emerald-100 text-emerald-700" : "bg-navy text-white hover:bg-navy-secondary"
+                        className={`px-3 py-1 rounded-xl font-bold text-xs ${
+                          task.status === "completed" ? "bg-mint-light text-mint" : "bg-navy text-white hover:bg-navy-secondary"
                         }`}
                       >
                         {task.status === "completed" ? "Completed ✓" : "Mark Done"}
@@ -835,7 +848,7 @@ export default function HouseholdHubPage() {
 
         {/* 5. MANAGE MEMBERS TAB (Feature 4 & Feature 5) */}
         {activeTab === "members" && (
-          <div className="space-y-6">
+          <div className="space-y-6 page-enter">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-navy">Flatmate & Member Management</h2>
@@ -851,7 +864,7 @@ export default function HouseholdHubPage() {
                       setManagePasswordEnabled(activeHousehold.password_joining_enabled || false);
                       setShowPasswordSecurityModal(true);
                     }}
-                    className="px-3.5 py-2 rounded-xl bg-cream hover:bg-navy/10 text-xs font-bold text-navy border border-navy/15 flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-xl bg-paper hover:bg-navy/10 text-xs font-bold text-navy border border-navy/15 flex items-center gap-1.5"
                   >
                     <Lock className="w-3.5 h-3.5" /> Joining Password
                   </button>
@@ -859,7 +872,7 @@ export default function HouseholdHubPage() {
 
                 <button
                   onClick={() => setShowDirectInviteModal(true)}
-                  className="px-3.5 py-2 rounded-xl bg-coral hover:bg-coral-hover text-xs font-bold text-white shadow-md flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl bg-coral hover:bg-coral-hover text-xs font-bold text-white  flex items-center gap-1.5"
                 >
                   <UserPlus className="w-3.5 h-3.5" /> Invite by Email
                 </button>
@@ -868,11 +881,11 @@ export default function HouseholdHubPage() {
 
             {/* PENDING JOIN REQUESTS & INVITATIONS (Feature 4) */}
             {invitations.filter((i) => i.status === "pending").length > 0 && (
-              <div className="bg-amber-50 rounded-3xl p-6 border border-amber-200 space-y-3">
+              <div className="bg-sun-light rounded-2xl p-6 border border-sun space-y-3">
                 <h3 className="font-bold text-sm text-navy flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600" /> Pending Join Requests & Invitations
+                  <AlertCircle className="w-4 h-4 text-[#8A6100]" /> Pending Join Requests & Invitations
                 </h3>
-                <div className="divide-y divide-amber-200/60 text-xs">
+                <div className="divide-y divide-sun/60 text-xs">
                   {invitations.filter((i) => i.status === "pending").map((inv) => (
                     <div key={inv.id} className="py-3 flex items-center justify-between">
                       <div>
@@ -883,7 +896,7 @@ export default function HouseholdHubPage() {
                             `Invited: ${inv.email || inv.invitee?.full_name}`
                           )}
                         </p>
-                        <p className="text-[11px] text-mutedblue-dark">
+                        <p className="text-xs text-mist-dark">
                           Expires: {new Date(inv.expires_at).toLocaleDateString()}
                         </p>
                       </div>
@@ -891,7 +904,7 @@ export default function HouseholdHubPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleApproveInvitation(inv.id)}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+                          className="px-3 py-1.5 rounded-xl bg-mint hover:opacity-90 text-white font-bold text-xs"
                         >
                           Approve
                         </button>
@@ -909,9 +922,9 @@ export default function HouseholdHubPage() {
             )}
 
             {/* ACTIVE FLATMATES LIST */}
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
+            <div className="bg-white rounded-2xl p-6 shadow-card border border-navy/5">
               <h3 className="font-bold text-sm text-navy mb-4">Active Household Residents</h3>
-              <div className="divide-y divide-cream text-xs">
+              <div className="divide-y divide-paper text-xs">
                 {balances.map((m) => {
                   const isThisOwner = activeHousehold?.owner_id === m.user_id;
                   return (
@@ -924,12 +937,12 @@ export default function HouseholdHubPage() {
                           <p className="font-bold text-sm text-navy flex items-center gap-2">
                             {m.user_name}
                             {isThisOwner && (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-coral-light text-coral">
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-coral-light text-coral">
                                 Owner
                               </span>
                             )}
                           </p>
-                          <p className="text-[11px] text-mutedblue-dark">
+                          <p className="text-xs text-mist-dark">
                             Active Member • Net Balance: ₹{(m.net_balance_paise / 100).toFixed(2)}
                           </p>
                         </div>
@@ -957,7 +970,7 @@ export default function HouseholdHubPage() {
       {/* CREATE HOUSEHOLD MODAL (Feature 3 Community Hierarchy) */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-md w-full rounded-2xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-xl text-navy mb-1">Create Community Flat</h3>
             <p className="text-xs text-navy-secondary mb-4">
               Set community, building, and flat details to distinguish identical room numbers.
@@ -1034,7 +1047,7 @@ export default function HouseholdHubPage() {
               </div>
 
               {/* Optional Joining Password (Feature 4) */}
-              <div className="p-3.5 rounded-2xl bg-cream/50 border border-navy/10 space-y-2">
+              <div className="p-3.5 rounded-2xl bg-paper/50 border border-navy/10 space-y-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -1066,7 +1079,7 @@ export default function HouseholdHubPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md"
+                  className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold "
                 >
                   Create Flat
                 </button>
@@ -1079,7 +1092,7 @@ export default function HouseholdHubPage() {
       {/* JOIN HOUSEHOLD MODAL (Feature 4 Method A) */}
       {showJoinModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-sm w-full rounded-3xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-lg text-navy mb-2">Join Flat with Code</h3>
             <form onSubmit={handleJoinHousehold} className="space-y-4">
               <div>
@@ -1115,7 +1128,7 @@ export default function HouseholdHubPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold shadow-md"
+                  className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold "
                 >
                   Submit Request
                 </button>
@@ -1128,7 +1141,7 @@ export default function HouseholdHubPage() {
       {/* DIRECT INVITATION MODAL (Feature 4 Method B) */}
       {showDirectInviteModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-sm w-full rounded-3xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-lg text-navy mb-2">Direct Flatmate Invitation</h3>
             <p className="text-xs text-navy-secondary mb-4">
               Send an official invite to a registered user's email address.
@@ -1156,7 +1169,7 @@ export default function HouseholdHubPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold shadow-md"
+                  className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold "
                 >
                   Send Invitation
                 </button>
@@ -1169,7 +1182,7 @@ export default function HouseholdHubPage() {
       {/* MANAGE SECURITY PASSWORD MODAL (Feature 5) */}
       {showPasswordSecurityModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-sm w-full rounded-3xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-lg text-navy mb-2">Household Security Password</h3>
             <form onSubmit={handleSaveSecurityPassword} className="space-y-4">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -1206,7 +1219,7 @@ export default function HouseholdHubPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold shadow-md"
+                  className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold "
                 >
                   Save Settings
                 </button>
@@ -1219,7 +1232,7 @@ export default function HouseholdHubPage() {
       {/* ADD EXPENSE MODAL */}
       {showAddExpenseModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-md w-full rounded-2xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-xl text-navy mb-4">Log Shared Expense</h3>
             <form onSubmit={handleAddExpense} className="space-y-4">
               <input
@@ -1228,7 +1241,7 @@ export default function HouseholdHubPage() {
                 value={expenseTitle}
                 onChange={(e) => setExpenseTitle(e.target.value)}
                 placeholder="Title (e.g. Sunday Groceries at Reliance)"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none"
               />
               <input
                 type="number"
@@ -1237,12 +1250,12 @@ export default function HouseholdHubPage() {
                 value={expenseAmount}
                 onChange={(e) => setExpenseAmount(e.target.value)}
                 placeholder="Amount ₹ (e.g. 1200)"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none font-bold"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none font-bold"
               />
               <select
                 value={expenseCategory}
                 onChange={(e) => setExpenseCategory(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none"
               >
                 <option value="groceries">Groceries</option>
                 <option value="utilities">Utilities</option>
@@ -1275,7 +1288,7 @@ export default function HouseholdHubPage() {
       {/* ADD BILL MODAL (Feature 8 Custom Bill Category) */}
       {showAddBillModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-md w-full rounded-2xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-xl text-navy mb-4">Add Recurring / Due Bill</h3>
             <form onSubmit={handleAddBill} className="space-y-4">
               <input
@@ -1284,7 +1297,7 @@ export default function HouseholdHubPage() {
                 value={billTitle}
                 onChange={(e) => setBillTitle(e.target.value)}
                 placeholder="e.g. TNEB Electricity Bill or Security"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none"
               />
               <div className="grid grid-cols-2 gap-3">
                 <input
@@ -1294,12 +1307,12 @@ export default function HouseholdHubPage() {
                   value={billAmount}
                   onChange={(e) => setBillAmount(e.target.value)}
                   placeholder="Amount ₹"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none font-bold"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none font-bold"
                 />
                 <select
                   value={billCategory}
                   onChange={(e) => setBillCategory(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none capitalize"
+                  className="w-full px-3 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none capitalize"
                 >
                   <option value="electricity">Electricity</option>
                   <option value="internet">Internet / WiFi</option>
@@ -1331,7 +1344,7 @@ export default function HouseholdHubPage() {
                 required
                 value={billDueDate}
                 onChange={(e) => setBillDueDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none"
               />
               <div className="flex items-center justify-end gap-3 pt-3">
                 <button
@@ -1356,7 +1369,7 @@ export default function HouseholdHubPage() {
       {/* ADD SHOPPING MODAL */}
       {showAddShoppingModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-sm w-full rounded-3xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-sm w-full rounded-2xl p-6 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-lg text-navy mb-3">Add to Shopping List</h3>
             <form onSubmit={handleAddShoppingItem} className="space-y-4">
               <input
@@ -1365,7 +1378,7 @@ export default function HouseholdHubPage() {
                 value={shoppingTitle}
                 onChange={(e) => setShoppingTitle(e.target.value)}
                 placeholder="Item name (e.g. Cooking Oil)"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none"
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -1373,14 +1386,14 @@ export default function HouseholdHubPage() {
                   value={shoppingQty}
                   onChange={(e) => setShoppingQty(e.target.value)}
                   placeholder="Qty"
-                  className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs bg-cream/30"
+                  className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs bg-paper/30"
                 />
                 <input
                   type="number"
                   value={shoppingEstPrice}
                   onChange={(e) => setShoppingEstPrice(e.target.value)}
                   placeholder="Est. ₹"
-                  className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs bg-cream/30"
+                  className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs bg-paper/30"
                 />
               </div>
               <div className="flex items-center justify-end gap-2 pt-2">
@@ -1406,7 +1419,7 @@ export default function HouseholdHubPage() {
       {/* ASSIGN TASK MODAL (Feature 9 Flatmate Dropdown) */}
       {showAddTaskModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-3xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
+          <div className="bg-white max-w-md w-full rounded-2xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
             <h3 className="font-bold text-xl text-navy mb-1">Assign Chore / Task</h3>
             <p className="text-xs text-navy-secondary mb-4">
               Delegate responsibilities directly to active flatmates.
@@ -1421,7 +1434,7 @@ export default function HouseholdHubPage() {
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder="e.g. Clean kitchen counter and sink"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-cream/30 focus:border-coral focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-sm bg-paper/30 focus:border-coral focus:outline-none"
                 />
               </div>
 
@@ -1449,7 +1462,7 @@ export default function HouseholdHubPage() {
                   value={taskDesc}
                   onChange={(e) => setTaskDesc(e.target.value)}
                   placeholder="e.g. Wipe with disinfectant after dinner"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-xs text-navy bg-cream/30 focus:border-coral focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-xs text-navy bg-paper/30 focus:border-coral focus:outline-none"
                 />
               </div>
 
@@ -1459,7 +1472,7 @@ export default function HouseholdHubPage() {
                   type="date"
                   value={taskDueDate}
                   onChange={(e) => setTaskDueDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-xs text-navy bg-cream/30 focus:border-coral focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-navy/15 text-xs text-navy bg-paper/30 focus:border-coral focus:outline-none"
                 />
               </div>
 
@@ -1473,7 +1486,7 @@ export default function HouseholdHubPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md"
+                  className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold "
                 >
                   Assign Task
                 </button>

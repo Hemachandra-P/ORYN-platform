@@ -2,12 +2,21 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { Search, Plus, X, ShoppingBag, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { 
-  Search, Filter, ShoppingBag, Plus, Sparkles, Heart, 
-  MapPin, Tag, ChevronDown, CheckCircle2, Lock, ArrowRight, ShieldCheck, User
-} from "lucide-react";
-import { apiRequest, getStoredToken } from "@/lib/api";
+import ListingCard from "@/components/ListingCard";
+import { apiRequest, getStoredUser } from "@/lib/api";
+
+const CATEGORIES = [
+  { id: "", label: "All" },
+  { id: "furniture", label: "Furniture" },
+  { id: "appliances", label: "Appliances" },
+  { id: "electronics", label: "Electronics" },
+  { id: "books", label: "Books" },
+  { id: "bicycles", label: "Cycles" },
+  { id: "kitchen", label: "Kitchen" },
+];
 
 export default function MarketplacePage() {
   const [listings, setListings] = useState<any[]>([]);
@@ -17,280 +26,138 @@ export default function MarketplacePage() {
   const [condition, setCondition] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [isMovingOut, setIsMovingOut] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    fetchListings();
-  }, [category, condition, sortBy, isMovingOut]);
+  useEffect(() => { setUser(getStoredUser()); }, []);
+  useEffect(() => { fetchListings(); /* eslint-disable-next-line */ }, [category, condition, sortBy, isMovingOut]);
 
-  const fetchListings = async () => {
+  const fetchListings = async (term: string = search) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (search) params.append("search", search);
+      if (term) params.append("search", term);
       if (category) params.append("category", category);
       if (condition) params.append("condition", condition);
       if (sortBy) params.append("sort_by", sortBy);
       if (isMovingOut) params.append("is_moving_out_sale", "true");
-
-      const data = await apiRequest(`/marketplace/?${params.toString()}`);
-      setListings(data);
-    } catch (err: any) {
+      setListings(await apiRequest(`/marketplace/?${params.toString()}`));
+    } catch (err) {
       console.error("Error fetching listings", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchListings();
-  };
-
-  const categories = [
-    { id: "", label: "All Items" },
-    { id: "furniture", label: "Furniture" },
-    { id: "appliances", label: "Appliances" },
-    { id: "electronics", label: "Electronics" },
-    { id: "books", label: "Books & Study" },
-    { id: "bicycles", label: "Bicycles & Mobility" },
-    { id: "kitchen", label: "Kitchen & Utensils" },
-  ];
+  const clearAll = () => { setCategory(""); setCondition(""); setSearch(""); setIsMovingOut(false); setSortBy("newest"); fetchListings(""); };
+  const hasPreview = listings.some((l) => l.is_preview || l.selling_price_paise == null);
+  const filtersActive = !!(category || condition || search || isMovingOut);
 
   return (
-    <div className="min-h-screen bg-cream text-navy flex flex-col">
+    <div className="min-h-screen flex flex-col bg-paper text-navy">
       <Navbar />
 
-      {/* HEADER & SEARCH BAR */}
-      <div className="bg-navy text-white px-4 sm:px-6 lg:px-8 py-10 border-b border-navy-secondary">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-coral/20 text-coral text-xs font-bold uppercase tracking-wider mb-2">
-                <Sparkles className="w-3.5 h-3.5" /> Campus Community Market
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Buy & Sell Used Essentials</h1>
-              <p className="text-sm text-mutedblue mt-1">Verified student & flatmate pre-owned furniture, cycles, and electronics.</p>
-            </div>
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
+        {/* Title row */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+          <div>
+            <h1 className="font-display font-extrabold text-4xl sm:text-5xl tracking-tight">Marketplace</h1>
+            <p className="mt-2 text-navy-secondary">Second-hand furniture, cycles and electronics from students near you.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/marketplace/moving-out" className="px-4 py-2.5 rounded-xl border border-navy/15 bg-white text-sm font-semibold hover:border-navy/40">Moving out sales</Link>
+            {user && <Link href="/marketplace/my-listings" className="px-4 py-2.5 rounded-xl border border-navy/15 bg-white text-sm font-semibold hover:border-navy/40">My listings</Link>}
+            <Link href="/marketplace/sell" className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy text-white text-sm font-semibold hover:bg-coral"><Plus className="w-4 h-4" /> Sell an item</Link>
+          </div>
+        </div>
 
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <Link
-                href="/marketplace/my-listings"
-                className="px-4 py-2.5 rounded-xl bg-navy-secondary hover:bg-navy-secondary/80 text-white text-xs font-bold border border-white/10 flex items-center gap-1.5 transition-colors"
-              >
-                <Tag className="w-3.5 h-3.5 text-coral" /> My Listings
-              </Link>
-              <Link
-                href="/marketplace/moving-out"
-                className="px-4 py-2.5 rounded-xl bg-navy-secondary hover:bg-navy-secondary/80 text-white text-xs font-bold border border-white/10 flex items-center gap-1.5 transition-colors"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-coral" /> Moving Out Sales
-              </Link>
-              <Link
-                href="/marketplace/sell"
-                className="px-5 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" /> Post a Listing
-              </Link>
-            </div>
+        {/* Search */}
+        <form onSubmit={(e) => { e.preventDefault(); fetchListings(); }} className="mt-8 relative" role="search">
+          <Search className="w-5 h-5 text-mist-dark absolute left-4 top-1/2 -translate-y-1/2" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search for a study table, mini-fridge, cycle or textbook"
+            aria-label="Search listings"
+            className="w-full bg-white pl-12 pr-28 py-4 rounded-2xl border border-navy/10 text-base placeholder:text-mist-dark focus:border-coral"
+          />
+          {search && (
+            <button type="button" onClick={() => { setSearch(""); fetchListings(""); }} aria-label="Clear search" className="absolute right-24 top-1/2 -translate-y-1/2 p-1.5 text-mist-dark hover:text-navy"><X className="w-4 h-4" /></button>
+          )}
+          <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 rounded-xl bg-navy text-white text-sm font-semibold hover:bg-coral">Search</button>
+        </form>
+
+        {/* Category tabs + filters */}
+        <div className="mt-6 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="Categories">
+            {CATEGORIES.map((c) => {
+              const active = category === c.id;
+              return (
+                <button key={c.id} role="tab" aria-selected={active} onClick={() => setCategory(c.id)} className={`relative px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${active ? "text-white" : "text-navy-secondary hover:bg-white"}`}>
+                  {active && <motion.span layoutId="cat-pill" className="absolute inset-0 rounded-full bg-navy" transition={{ type: "spring", stiffness: 450, damping: 36 }} />}
+                  <span className="relative">{c.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Search Box */}
-          <form onSubmit={handleSearchSubmit} className="flex gap-2 max-w-2xl">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-mutedblue absolute left-3.5 top-3.5" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search study tables, mini-fridges, cycles, textbooks..."
-                className="w-full bg-navy-secondary text-white placeholder-mutedblue pl-10 pr-4 py-3 rounded-2xl border border-white/10 focus:outline-none focus:border-coral text-sm"
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-6 py-3 rounded-2xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all shrink-0"
-            >
-              Search
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* CATEGORY CHIPS */}
-      <div className="bg-white border-b border-cream-dark px-4 sm:px-6 lg:px-8 py-3">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCategory(cat.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                category === cat.id
-                  ? "bg-navy text-white shadow-sm"
-                  : "bg-cream/60 text-navy hover:bg-cream"
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* FILTER BAR & LISTINGS GRID */}
-      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <p className="text-xs font-semibold text-navy-secondary">
-            Showing <span className="font-bold text-navy">{listings.length}</span> verified listing(s)
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Condition selector */}
-            <select
-              value={condition}
-              onChange={(e) => setCondition(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-navy/15 text-xs bg-white text-navy focus:outline-none focus:border-coral"
-            >
-              <option value="">All Conditions</option>
-              <option value="brand_new">Brand New</option>
-              <option value="like_new">Like New</option>
-              <option value="good">Good Condition</option>
-              <option value="fair">Fair Condition</option>
+          <div className="flex flex-wrap items-center gap-2">
+            <select value={condition} onChange={(e) => setCondition(e.target.value)} aria-label="Condition" className="px-3 py-2 rounded-xl border border-navy/10 text-sm bg-white">
+              <option value="">Any condition</option>
+              <option value="brand_new">Brand new</option>
+              <option value="like_new">Like new</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
             </select>
-
-            {/* Sort selector */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-navy/15 text-xs bg-white text-navy focus:outline-none focus:border-coral"
-            >
-              <option value="newest">Sort: Newest First</option>
-              <option value="price_asc">Sort: Price (Low to High)</option>
-              <option value="price_desc">Sort: Price (High to Low)</option>
-              <option value="views">Sort: Most Viewed</option>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} aria-label="Sort" className="px-3 py-2 rounded-xl border border-navy/10 text-sm bg-white">
+              <option value="newest">Newest first</option>
+              <option value="price_asc">Price: low to high</option>
+              <option value="price_desc">Price: high to low</option>
+              <option value="views">Most viewed</option>
             </select>
-
-            {/* Moving out toggle */}
-            <label className="flex items-center gap-2 text-xs font-bold text-navy cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-navy/15">
-              <input
-                type="checkbox"
-                checked={isMovingOut}
-                onChange={(e) => setIsMovingOut(e.target.checked)}
-                className="rounded text-coral focus:ring-coral"
-              />
-              Moving Out Only
+            <label className={`flex items-center gap-2 text-sm font-medium cursor-pointer px-3 py-2 rounded-xl border ${isMovingOut ? "border-sun bg-sun-light" : "border-navy/10 bg-white"}`}>
+              <input type="checkbox" checked={isMovingOut} onChange={(e) => setIsMovingOut(e.target.checked)} className="accent-coral" />
+              Moving out only
             </label>
           </div>
         </div>
 
-        {/* LISTINGS GRID */}
+        {/* Preview-mode explainer: tells visitors why prices are hidden and how to unlock them */}
+        {!loading && hasPreview && (
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-sun-light border border-sun/60 px-5 py-4">
+            <p className="text-sm"><span className="font-semibold">You are browsing in preview.</span> Prices, photos and seller contact unlock with a ₹20 membership that lasts 6 months.</p>
+            <Link href="/subscriptions" className="group inline-flex items-center gap-1.5 text-sm font-semibold shrink-0">See membership <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></Link>
+          </div>
+        )}
+
+        {/* Results */}
+        <div className="mt-6 flex items-center justify-between text-sm text-mist-dark" aria-live="polite">
+          <span>{loading ? "Loading listings" : `${listings.length} ${listings.length === 1 ? "listing" : "listings"}`}</span>
+          {filtersActive && <button onClick={clearAll} className="font-medium text-coral hover:underline">Clear filters</button>}
+        </div>
+
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="bg-white rounded-3xl p-4 shadow-card animate-pulse h-80">
-                <div className="bg-cream h-48 rounded-2xl mb-4"></div>
-                <div className="h-4 bg-cream rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-cream rounded w-1/2"></div>
+              <div key={n} className="bg-white rounded-2xl border border-navy/10 overflow-hidden animate-pulse">
+                <div className="aspect-[4/3] bg-paper" />
+                <div className="p-5 space-y-3"><div className="h-4 bg-paper rounded w-3/4" /><div className="h-3 bg-paper rounded w-full" /><div className="h-3 bg-paper rounded w-1/2" /></div>
               </div>
             ))}
           </div>
         ) : listings.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl shadow-card border border-navy/5">
-            <ShoppingBag className="w-12 h-12 mx-auto text-mutedblue-dark mb-3 opacity-40" />
-            <h3 className="font-bold text-lg text-navy">No listings match your criteria</h3>
-            <p className="text-xs text-navy-secondary mt-1">Try clearing your filters or search keywords</p>
-            <button
-              onClick={() => { setCategory(""); setCondition(""); setSearch(""); setIsMovingOut(false); }}
-              className="mt-4 px-4 py-2 bg-navy text-white text-xs font-bold rounded-xl"
-            >
-              Reset Filters
-            </button>
+          <div className="mt-4 text-center py-20 bg-white rounded-2xl border border-navy/10">
+            <ShoppingBag className="w-10 h-10 mx-auto text-mist" />
+            <h3 className="mt-4 font-display font-bold text-xl">Nothing matches those filters</h3>
+            <p className="mt-1 text-sm text-navy-secondary">Try a different word, or clear the filters to see everything.</p>
+            <button onClick={clearAll} className="mt-5 px-5 py-2.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-coral">Clear filters</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {listings.map((item) => {
-              const isPreview = item.is_preview || item.selling_price_paise == null;
-
-              return (
-                <Link
-                  key={item.id}
-                  href={`/marketplace/${item.id}`}
-                  className="bg-white rounded-3xl overflow-hidden shadow-card border border-navy/5 flex flex-col group hover:shadow-elevated hover:-translate-y-1 transition-all"
-                >
-                  <div className="h-52 overflow-hidden relative bg-navy/5">
-                    {item.images?.[0] ? (
-                      <img
-                        src={item.images[0].image_url}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-mutedblue text-sm">
-                        No Photo Available
-                      </div>
-                    )}
-
-                    {item.is_moving_out_sale && (
-                      <span className="absolute top-3 left-3 bg-coral text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> Moving Out Sale
-                      </span>
-                    )}
-
-                    {!isPreview && item.selling_price_paise != null && (
-                      <span className="absolute bottom-3 right-3 bg-navy/90 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md">
-                        ₹{(item.selling_price_paise / 100).toLocaleString("en-IN")}
-                      </span>
-                    )}
-
-                    {isPreview && (
-                      <span className="absolute top-3 right-3 bg-navy/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
-                        <Lock className="w-3 h-3 text-coral" /> Preview Mode
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      {!isPreview && (
-                        <div className="flex items-center justify-between text-xs text-mutedblue-dark mb-1.5">
-                          <span className="capitalize font-semibold text-coral">{item.category}</span>
-                          {item.condition && (
-                            <span className="capitalize px-2 py-0.5 rounded bg-cream font-bold text-navy text-[10px]">
-                              {item.condition?.replace("_", " ")}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      <h3 className="font-bold text-base text-navy line-clamp-1 group-hover:text-coral transition-colors">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-navy-secondary mt-1 line-clamp-2 leading-relaxed">
-                        {item.description}
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-cream flex items-center justify-between text-xs text-mutedblue-dark">
-                      <span className="flex items-center gap-1 truncate max-w-[180px] font-medium">
-                        <User className="w-3.5 h-3.5 text-navy/60 shrink-0" />
-                        {item.seller?.full_name || "Community Seller"}
-                      </span>
-
-                      {isPreview ? (
-                        <span className="font-bold text-coral flex items-center gap-1 group-hover:underline">
-                          <Lock className="w-3 h-3" /> View Preview
-                        </span>
-                      ) : (
-                        <span className="font-bold text-navy group-hover:text-coral flex items-center gap-1">
-                          View Item →
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {listings.map((item, i) => <ListingCard key={item.id} item={item} index={i} />)}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

@@ -53,7 +53,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-paper flex flex-col">
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -78,14 +78,14 @@ export default function LoginPage() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-mutedblue-dark absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-mist-dark absolute left-3.5 top-3.5" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-cream/30 text-navy"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-paper/30 text-navy"
                 />
               </div>
             </div>
@@ -95,14 +95,14 @@ export default function LoginPage() {
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-mutedblue-dark absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-mist-dark absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-cream/30 text-navy"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-navy/15 focus:outline-none focus:border-coral focus:ring-1 focus:ring-coral text-sm bg-paper/30 text-navy"
                 />
               </div>
             </div>
@@ -118,18 +118,18 @@ export default function LoginPage() {
           </form>
 
           {/* Quick Demo Logins for Instant Testing */}
-          <div className="mt-8 pt-6 border-t border-cream">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-mutedblue-dark text-center mb-3">
+          <div className="mt-8 pt-6 border-t border-paper">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-mist-dark text-center mb-3">
               Fast Demo Accounts (Click to Autofill)
             </p>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => fillQuickLogin("rahul@example.com", "Pass@1234")}
-                className="p-2 rounded-xl bg-cream/60 hover:bg-cream border border-navy/10 text-left text-xs transition-colors"
+                className="p-2 rounded-xl bg-paper/60 hover:bg-paper border border-navy/10 text-left text-xs transition-colors"
               >
                 <p className="font-bold text-navy truncate">Rahul (Flat Owner)</p>
-                <p className="text-[10px] text-mutedblue-dark">rahul@example.com</p>
+                <p className="text-[10px] text-mist-dark">rahul@example.com</p>
               </button>
 
               <button
@@ -140,25 +140,25 @@ export default function LoginPage() {
                 <p className="font-bold text-coral truncate flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> Super Admin
                 </p>
-                <p className="text-[10px] text-mutedblue">admin@nestsync.com</p>
+                <p className="text-[10px] text-mist">admin@nestsync.com</p>
               </button>
 
               <button
                 type="button"
                 onClick={() => fillQuickLogin("joy@example.com", "Pass@1234")}
-                className="p-2 rounded-xl bg-cream/60 hover:bg-cream border border-navy/10 text-left text-xs transition-colors"
+                className="p-2 rounded-xl bg-paper/60 hover:bg-paper border border-navy/10 text-left text-xs transition-colors"
               >
                 <p className="font-bold text-navy truncate">Joy (Flatmate)</p>
-                <p className="text-[10px] text-mutedblue-dark">joy@example.com</p>
+                <p className="text-[10px] text-mist-dark">joy@example.com</p>
               </button>
 
               <button
                 type="button"
                 onClick={() => fillQuickLogin("arjun@example.com", "Pass@1234")}
-                className="p-2 rounded-xl bg-cream/60 hover:bg-cream border border-navy/10 text-left text-xs transition-colors"
+                className="p-2 rounded-xl bg-paper/60 hover:bg-paper border border-navy/10 text-left text-xs transition-colors"
               >
                 <p className="font-bold text-navy truncate">Arjun (Flatmate)</p>
-                <p className="text-[10px] text-mutedblue-dark">arjun@example.com</p>
+                <p className="text-[10px] text-mist-dark">arjun@example.com</p>
               </button>
             </div>
           </div>
