@@ -16,11 +16,13 @@ class HouseholdTaskUpdate(BaseModel):
     assigned_to_id: Optional[str] = None
     due_date: Optional[datetime] = None
     recurrence: Optional[str] = None
-    status: Optional[str] = None # todo, in_progress, completed
+    status: Optional[str] = None # pending, in_progress, completed
 
 class HouseholdTaskResponse(BaseModel):
     id: str
     household_id: str
+    creator_id: Optional[str] = None
+    creator: Optional[UserResponse] = None
     title: str
     description: Optional[str] = None
     assigned_to_id: Optional[str] = None

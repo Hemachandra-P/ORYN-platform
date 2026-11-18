@@ -1,41 +1,47 @@
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
+from typing import Optional
 from datetime import datetime
-from app.schemas.auth import UserResponse
 
 class AdminOverviewMetrics(BaseModel):
     total_users: int
     active_users: int
     new_registrations_last_30d: int
+    
+    # Household Metrics
     total_households: int
+    total_communities: int = 0
+    total_household_members: int = 0
+    free_households: int = 0
+    premium_households: int = 0
+    active_household_subscriptions: int = 0
+    expired_household_subscriptions: int = 0
+    
+    # Marketplace Membership Metrics
+    active_marketplace_memberships: int = 0
+    expired_marketplace_memberships: int = 0
+    
+    # Listing Metrics
     total_listings: int
     active_listings: int
     sold_listings: int
     deleted_listings: int
-    total_subscriptions: int
-    active_premium_subscribers: int
-    verified_subscription_revenue_paise: int
-    total_completed_marketplace_transactions: int
-    marketplace_fees_collected_paise: int
-    pending_marketplace_payments_count: int
+    
+    # Revenue Separation (Paise)
+    total_verified_subscription_revenue_paise: int
+    total_marketplace_membership_revenue_paise: int
+    
+    # Operational Status
+    pending_join_requests: int = 0
     failed_payments_count: int
     reported_listings_count: int
     pending_complaints_count: int
 
 class UserStatusUpdateRequest(BaseModel):
     status: str # active, suspended, banned
-    role: Optional[str] = None # user, household_owner, household_admin, platform_admin, super_admin
-
-class ReportCreate(BaseModel):
-    target_type: str # listing, user, household, message
-    target_id: str
-    reason: str
-    details: Optional[str] = None
 
 class ReportResponse(BaseModel):
     id: str
     reporter_id: str
-    reporter: Optional[UserResponse] = None
     target_type: str
     target_id: str
     reason: str
@@ -50,15 +56,14 @@ class ReportResponse(BaseModel):
 
 class ReportResolveRequest(BaseModel):
     status: str # resolved, dismissed
-    resolution_notes: str
+    resolution_notes: Optional[str] = None
 
 class AdminAuditLogResponse(BaseModel):
     id: str
     admin_id: str
-    admin: Optional[UserResponse] = None
     action: str
-    target_type: str
-    target_id: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
     details: Optional[str] = None
     ip_address: Optional[str] = None
     created_at: datetime
@@ -66,15 +71,21 @@ class AdminAuditLogResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class PlatformSettingUpdate(BaseModel):
-    value: str
-    description: Optional[str] = None
-
 class PlatformSettingResponse(BaseModel):
     key: str
     value: str
     description: Optional[str] = None
-    updated_at: datetime
 
     class Config:
         from_attributes = True
+
+class PlatformSettingUpdate(BaseModel):
+    value: str
+
+class SubscriptionConfigUpdate(BaseModel):
+    free_member_limit: int = 3
+    premium_price_inr: int = 99
+    premium_validity_months: int = 6
+    premium_member_capacity: int = 9999
+    marketplace_membership_price_inr: int = 20
+    marketplace_membership_validity_months: int = 6

@@ -5,7 +5,8 @@ from app.schemas.auth import UserResponse
 
 class BillCreate(BaseModel):
     title: str
-    category: str # electricity, water, internet, rent, maintenance, gas, custom
+    category: str # electricity, internet, water, rent, maintenance, gas, other
+    custom_category: Optional[str] = None # Mandatory if category == "other"
     amount_paise: int = Field(..., gt=0)
     due_date: datetime
     recurrence: str = "none" # none, monthly, quarterly, yearly
@@ -14,6 +15,8 @@ class BillCreate(BaseModel):
 
 class BillUpdate(BaseModel):
     title: Optional[str] = None
+    category: Optional[str] = None
+    custom_category: Optional[str] = None
     amount_paise: Optional[int] = None
     due_date: Optional[datetime] = None
     recurrence: Optional[str] = None
@@ -26,6 +29,7 @@ class BillResponse(BaseModel):
     household_id: str
     title: str
     category: str
+    custom_category: Optional[str] = None
     amount_paise: int
     due_date: datetime
     paid_by_id: Optional[str] = None

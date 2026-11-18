@@ -6,9 +6,8 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { 
   ShieldCheck, Users, Home, ShoppingBag, CreditCard, AlertTriangle, 
-  Settings, FileText, Activity, CheckCircle, XCircle, Search, 
-  ArrowUpRight, RefreshCw, Lock, Sparkles, Filter, DollarSign, 
-  RotateCcw, Download, CheckCircle2, ChevronRight
+  Settings, FileText, Activity, RefreshCw, Sparkles, DollarSign, 
+  Download, Building, Layers, Sliders, CheckCircle2 
 } from "lucide-react";
 import { apiRequest, getStoredToken, getStoredUser } from "@/lib/api";
 
@@ -16,39 +15,36 @@ export default function AdminPanelPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [activeSection, setActiveSection] = useState<
-    "overview" | "users" | "households" | "moderation" | "transactions" | "marketplace_fees" | "reports" | "logs" | "settings"
+    "overview" | "users" | "households" | "communities" | "moderation" | "subscriptions" | "financials" | "analytics" | "reports" | "logs"
   >("overview");
 
   // Admin Data states
   const [metrics, setMetrics] = useState<any>(null);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [householdsList, setHouseholdsList] = useState<any[]>([]);
+  const [communitiesList, setCommunitiesList] = useState<any[]>([]);
   const [moderationList, setModerationList] = useState<any[]>([]);
-  const [transactionsList, setTransactionsList] = useState<any[]>([]);
   const [reportsList, setReportsList] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
-  const [platformSettings, setPlatformSettings] = useState<any[]>([]);
+  const [financials, setFinancials] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<any>(null);
 
-  // Marketplace Fee State
-  const [feeSettings, setFeeSettings] = useState<{
-    marketplace_fee_enabled: boolean;
-    marketplace_fee_amount_paise: number;
-    marketplace_fee_policy: string;
-  }>({
-    marketplace_fee_enabled: true,
-    marketplace_fee_amount_paise: 2000,
-    marketplace_fee_policy: "combined_fee",
+  // Subscription Configuration Form
+  const [subConfig, setSubConfig] = useState({
+    free_member_limit: 3,
+    premium_price_inr: 99,
+    premium_validity_months: 6,
+    premium_member_capacity: 9999,
+    marketplace_membership_price_inr: 20,
+    marketplace_membership_validity_months: 6,
   });
-  const [savingFeeSettings, setSavingFeeSettings] = useState(false);
-  const [marketplaceTransactions, setMarketplaceTransactions] = useState<any[]>([]);
-  const [feeReport, setFeeReport] = useState<any>(null);
-  const [refundingTxId, setRefundingTxId] = useState<string | null>(null);
-  const [refundReason, setRefundReason] = useState("");
-  const [showRefundModal, setShowRefundModal] = useState(false);
-  const [selectedTxForRefund, setSelectedTxForRefund] = useState<any>(null);
-  
+  const [savingConfig, setSavingConfig] = useState(false);
+
+  // New community modal
+  const [newCommName, setNewCommName] = useState("");
+  const [newCommCity, setNewCommCity] = useState("Chennai");
+
   const [loading, setLoading] = useState(true);
-  const [userSearch, setUserSearch] = useState("");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -79,39 +75,36 @@ export default function AdminPanelPage() {
         metricsData,
         usersData,
         housesData,
+        commsData,
         modData,
-        txData,
         repData,
         logsData,
-        settingsData,
-        feeSettingsData,
-        mktTxData,
-        feeRepData,
+        finData,
+        analData,
+        configData,
       ] = await Promise.all([
         apiRequest("/admin/overview"),
         apiRequest("/admin/users"),
         apiRequest("/admin/households"),
+        apiRequest("/admin/communities"),
         apiRequest("/admin/marketplace/moderation"),
-        apiRequest("/admin/transactions"),
         apiRequest("/admin/reports"),
         apiRequest("/admin/audit-logs"),
-        apiRequest("/admin/settings"),
-        apiRequest("/admin/marketplace/fee-settings"),
-        apiRequest("/admin/marketplace/transactions"),
-        apiRequest("/admin/marketplace/fee-report"),
+        apiRequest("/admin/financials/report"),
+        apiRequest("/admin/task-bill-analytics"),
+        apiRequest("/admin/subscriptions/config"),
       ]);
 
       setMetrics(metricsData);
       setUsersList(usersData);
       setHouseholdsList(housesData);
+      setCommunitiesList(commsData);
       setModerationList(modData);
-      setTransactionsList(txData);
       setReportsList(repData);
       setAuditLogs(logsData);
-      setPlatformSettings(settingsData);
-      setFeeSettings(feeSettingsData);
-      setMarketplaceTransactions(mktTxData);
-      setFeeReport(feeRepData);
+      setFinancials(finData);
+      setAnalytics(analData);
+      if (configData) setSubConfig(configData);
     } catch (err: any) {
       showToast(err.message || "Failed to load admin data");
     } finally {
@@ -119,60 +112,50 @@ export default function AdminPanelPage() {
     }
   };
 
-  // Save Marketplace Fee Settings
-  const handleSaveFeeSettings = async (e: React.FormEvent) => {
+  const handleSaveSubConfig = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSavingFeeSettings(true);
+    setSavingConfig(true);
     try {
-      const updated = await apiRequest("/admin/marketplace/fee-settings", {
+      await apiRequest("/admin/subscriptions/config", {
         method: "PUT",
-        body: JSON.stringify(feeSettings),
+        body: JSON.stringify(subConfig),
       });
-      setFeeSettings(updated);
-      showToast("Marketplace fee policy updated successfully!");
-      // reload audit logs
-      const logs = await apiRequest("/admin/audit-logs");
-      setAuditLogs(logs);
+      showToast("Subscription & pricing parameters updated!");
+      loadAllAdminData();
     } catch (err: any) {
-      showToast(err.message || "Failed to update fee settings");
+      showToast(err.message || "Failed to update configuration");
     } finally {
-      setSavingFeeSettings(false);
+      setSavingConfig(false);
     }
   };
 
-  // Process Refund
-  const handleProcessRefund = async () => {
-    if (!selectedTxForRefund) return;
+  const handleAddCommunity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCommName.trim()) return;
     try {
-      await apiRequest(`/admin/marketplace/transactions/${selectedTxForRefund.id}/refund`, {
+      await apiRequest("/admin/communities", {
         method: "POST",
-        body: JSON.stringify({ reason: refundReason || "Customer refund request" }),
+        body: JSON.stringify({ name: newCommName.trim(), city: newCommCity.trim() }),
       });
-      showToast("Transaction fee refunded and logged in audit trail.");
-      setShowRefundModal(false);
-      setSelectedTxForRefund(null);
-      setRefundReason("");
+      setNewCommName("");
+      showToast("Community added successfully!");
       loadAllAdminData();
     } catch (err: any) {
-      alert(err.message || "Refund failed");
+      showToast(err.message || "Failed to add community");
     }
   };
 
-  // User Actions
-  const handleUpdateUserStatus = async (userId: string, newStatus: string) => {
+  const handleDeleteCommunity = async (commId: string) => {
+    if (!confirm("Are you sure you want to delete this community?")) return;
     try {
-      await apiRequest(`/admin/users/${userId}/status`, {
-        method: "PUT",
-        body: JSON.stringify({ status: newStatus }),
-      });
-      showToast(`User status updated to ${newStatus}`);
+      await apiRequest(`/admin/communities/${commId}`, { method: "DELETE" });
+      showToast("Community removed.");
       loadAllAdminData();
     } catch (err: any) {
-      showToast(err.message);
+      showToast(err.message || "Failed to delete community");
     }
   };
 
-  // Moderation Actions
   const handleModerateListing = async (listingId: string, action: string) => {
     try {
       await apiRequest(`/admin/marketplace/moderation/${listingId}?action=${action}`, {
@@ -185,17 +168,13 @@ export default function AdminPanelPage() {
     }
   };
 
-  // Report Resolution
-  const handleResolveReport = async (reportId: string, resolutionStatus: string) => {
+  const handleUpdateUserStatus = async (userId: string, newStatus: string) => {
     try {
-      await apiRequest(`/admin/reports/${reportId}/resolve`, {
+      await apiRequest(`/admin/users/${userId}/status`, {
         method: "PUT",
-        body: JSON.stringify({
-          status: resolutionStatus,
-          resolution_notes: `Resolved by ${currentUser?.full_name}`,
-        }),
+        body: JSON.stringify({ status: newStatus }),
       });
-      showToast(`Report marked as ${resolutionStatus}`);
+      showToast(`User status set to ${newStatus}`);
       loadAllAdminData();
     } catch (err: any) {
       showToast(err.message);
@@ -204,14 +183,15 @@ export default function AdminPanelPage() {
 
   const navItems = [
     { id: "overview", label: "Dashboard Overview", icon: Activity },
-    { id: "marketplace_fees", label: "Marketplace Fees & Policies", icon: DollarSign },
+    { id: "subscriptions", label: "Pricing & Membership Config", icon: Sliders },
+    { id: "financials", label: "Separate Revenue Ledger", icon: DollarSign },
+    { id: "communities", label: "Community Management", icon: Building },
+    { id: "households", label: "Households & Flats", icon: Home },
     { id: "users", label: "User Accounts", icon: Users },
-    { id: "households", label: "Households", icon: Home },
     { id: "moderation", label: "Listing Moderation", icon: ShoppingBag },
-    { id: "transactions", label: "Subscription Revenue", icon: CreditCard },
+    { id: "analytics", label: "Task & Custom Bill Usage", icon: Layers },
     { id: "reports", label: "Reports & Complaints", icon: AlertTriangle },
-    { id: "logs", label: "Admin Audit Logs", icon: FileText },
-    { id: "settings", label: "Platform Settings", icon: Settings },
+    { id: "logs", label: "Admin Audit Trail", icon: FileText },
   ];
 
   return (
@@ -240,7 +220,7 @@ export default function AdminPanelPage() {
                 </span>
               </div>
               <p className="text-xs text-mutedblue mt-0.5">
-                Authorized Platform Administrator: {currentUser?.full_name} ({currentUser?.role})
+                Authorized Admin: {currentUser?.full_name} ({currentUser?.role})
               </p>
             </div>
           </div>
@@ -249,7 +229,7 @@ export default function AdminPanelPage() {
             onClick={loadAllAdminData}
             className="px-3.5 py-2 rounded-xl bg-navy-secondary hover:bg-navy-secondary/80 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
-            <RefreshCw className="w-3.5 h-3.5" /> Refresh Live Metrics
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh Metrics
           </button>
         </div>
       </div>
@@ -284,53 +264,39 @@ export default function AdminPanelPage() {
           {/* 1. OVERVIEW METRICS */}
           {activeSection === "overview" && metrics && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div className="bg-white p-4 rounded-3xl shadow-card border border-navy/5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
                   <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Total Users</p>
-                  <p className="text-2xl font-black text-navy mt-1">{metrics.total_users}</p>
+                  <p className="text-3xl font-black text-navy mt-1">{metrics.total_users}</p>
                   <p className="text-[10px] text-emerald-600 font-bold mt-1">
-                    +{metrics.new_registrations_last_30d} 30d
+                    {metrics.active_users} Active · +{metrics.new_registrations_last_30d} 30d
                   </p>
                 </div>
 
-                <div className="bg-white p-4 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Active Flats</p>
-                  <p className="text-2xl font-black text-navy mt-1">{metrics.total_households}</p>
-                  <p className="text-[10px] text-mutedblue-dark mt-1">Households</p>
-                </div>
-
-                <div className="bg-white p-4 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Active Listings</p>
-                  <p className="text-2xl font-black text-coral mt-1">{metrics.active_listings ?? metrics.total_listings}</p>
+                <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
+                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Households & Flats</p>
+                  <p className="text-3xl font-black text-navy mt-1">{metrics.total_households}</p>
                   <p className="text-[10px] text-mutedblue-dark mt-1">
-                    {metrics.sold_listings ?? 0} Sold · {metrics.deleted_listings ?? 0} Deleted
+                    {metrics.free_households} Free · {metrics.premium_households} Premium
                   </p>
                 </div>
 
-                <div className="bg-white p-4 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Mkt Completed</p>
-                  <p className="text-2xl font-black text-navy mt-1">
-                    {metrics.total_completed_marketplace_transactions ?? 0}
+                <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
+                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Mkt Memberships</p>
+                  <p className="text-3xl font-black text-coral mt-1">
+                    {metrics.active_marketplace_memberships}
                   </p>
-                  <p className="text-[10px] text-emerald-600 font-bold mt-1">Purchases</p>
+                  <p className="text-[10px] text-mutedblue-dark mt-1">
+                    Active (₹20/6-mo) · {metrics.expired_marketplace_memberships} Expired
+                  </p>
                 </div>
 
-                <div className="bg-white p-4 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Mkt Fees (Net)</p>
-                  <p className="text-2xl font-black text-coral mt-1">
-                    ₹{((metrics.marketplace_fees_collected_paise ?? 0) / 100).toLocaleString("en-IN")}
+                <div className="bg-white p-5 rounded-3xl shadow-card border border-navy/5">
+                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Marketplace Revenue</p>
+                  <p className="text-3xl font-black text-emerald-600 mt-1">
+                    ₹{(metrics.total_marketplace_membership_revenue_paise / 100).toFixed(2)}
                   </p>
-                  <p className="text-[10px] text-mutedblue-dark mt-1">Transaction Fees</p>
-                </div>
-
-                <div className="bg-white p-4 rounded-3xl shadow-card border border-navy/5">
-                  <p className="text-[11px] text-mutedblue-dark uppercase font-semibold">Sub Revenue</p>
-                  <p className="text-2xl font-black text-navy mt-1">
-                    ₹{(metrics.verified_subscription_revenue_paise / 100).toLocaleString("en-IN")}
-                  </p>
-                  <p className="text-[10px] text-emerald-600 font-bold mt-1">
-                    {metrics.active_premium_subscribers} Subs
-                  </p>
+                  <p className="text-[10px] text-mutedblue-dark mt-1">Separate from Subscriptions</p>
                 </div>
               </div>
 
@@ -339,310 +305,336 @@ export default function AdminPanelPage() {
                 <h3 className="font-bold text-sm text-navy mb-4">Platform Operational Health</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
                   <div className="p-4 rounded-2xl bg-cream-light border border-cream">
-                    <p className="font-bold text-navy">Pending Reports / Disputes</p>
-                    <p className="text-2xl font-black text-coral mt-1">{metrics.pending_complaints_count}</p>
+                    <p className="font-bold text-navy">Household Premium Subs Revenue</p>
+                    <p className="text-2xl font-black text-navy mt-1">
+                      ₹{(metrics.total_verified_subscription_revenue_paise / 100).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-cream-light border border-cream">
+                    <p className="font-bold text-navy">Pending Join Requests</p>
+                    <p className="text-2xl font-black text-coral mt-1">{metrics.pending_join_requests}</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-cream-light border border-cream">
                     <p className="font-bold text-navy">Flagged Listings</p>
                     <p className="text-2xl font-black text-navy mt-1">{metrics.reported_listings_count}</p>
                   </div>
                   <div className="p-4 rounded-2xl bg-cream-light border border-cream">
-                    <p className="font-bold text-navy">Pending Mkt Payments</p>
-                    <p className="text-2xl font-black text-amber-500 mt-1">
-                      {metrics.pending_marketplace_payments_count ?? 0}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-cream-light border border-cream">
-                    <p className="font-bold text-navy">Failed Payment Webhooks</p>
-                    <p className="text-2xl font-black text-emerald-600 mt-1">{metrics.failed_payments_count}</p>
+                    <p className="font-bold text-navy">Pending Complaints</p>
+                    <p className="text-2xl font-black text-coral mt-1">{metrics.pending_complaints_count}</p>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 2. MARKETPLACE FEES & POLICIES MANAGEMENT */}
-          {activeSection === "marketplace_fees" && (
-            <div className="space-y-6">
-              {/* CONFIGURATION CARD */}
-              <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="font-bold text-base text-navy">Marketplace Fee Configuration</h3>
-                    <p className="text-xs text-navy-secondary">
-                      Configure the transaction fee amount and collection policy across the platform.
-                    </p>
+          {/* 2. PRICING & MEMBERSHIP CONFIGURATION (Feature 2 & 10) */}
+          {activeSection === "subscriptions" && (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/5 space-y-6">
+              <div>
+                <h3 className="font-bold text-lg text-navy">Household & Marketplace Pricing Configuration</h3>
+                <p className="text-xs text-navy-secondary mt-1">
+                  Configure free plan member thresholds, premium household pricing, and ₹20 marketplace membership terms.
+                </p>
+              </div>
+
+              <form onSubmit={handleSaveSubConfig} className="space-y-6">
+                <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10 space-y-4">
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-navy">Household Plan Limits</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-navy mb-1">Free Flat Member Limit</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={subConfig.free_member_limit}
+                        onChange={(e) => setSubConfig({ ...subConfig, free_member_limit: parseInt(e.target.value || "3") })}
+                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
+                      />
+                      <p className="text-[10px] text-mutedblue-dark mt-1">Default is 3 members total</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-navy mb-1">Premium Price (₹ INR)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={subConfig.premium_price_inr}
+                        onChange={(e) => setSubConfig({ ...subConfig, premium_price_inr: parseInt(e.target.value || "99") })}
+                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
+                      />
+                      <p className="text-[10px] text-mutedblue-dark mt-1">Initial pricing is ₹99</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-navy mb-1">Premium Validity (Months)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={subConfig.premium_validity_months}
+                        onChange={(e) => setSubConfig({ ...subConfig, premium_validity_months: parseInt(e.target.value || "6") })}
+                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
+                      />
+                      <p className="text-[10px] text-mutedblue-dark mt-1">Six months validity</p>
+                    </div>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-coral-light text-coral">
-                    Configurable Policy
+                </div>
+
+                <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10 space-y-4">
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-navy">Marketplace Membership Policy</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-navy mb-1">Membership Price (₹ INR)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={subConfig.marketplace_membership_price_inr}
+                        onChange={(e) => setSubConfig({ ...subConfig, marketplace_membership_price_inr: parseInt(e.target.value || "20") })}
+                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
+                      />
+                      <p className="text-[10px] text-mutedblue-dark mt-1">Default is ₹20 for 6 months</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-navy mb-1">Membership Validity (Months)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={subConfig.marketplace_membership_validity_months}
+                        onChange={(e) => setSubConfig({ ...subConfig, marketplace_membership_validity_months: parseInt(e.target.value || "6") })}
+                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy font-bold bg-white"
+                      />
+                      <p className="text-[10px] text-mutedblue-dark mt-1">Six months validity</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={savingConfig}
+                    className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all"
+                  >
+                    {savingConfig ? "Saving..." : "Save Pricing Parameters"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* 3. SEPARATE REVENUE LEDGER (Feature 10) */}
+          {activeSection === "financials" && financials && (
+            <div className="space-y-6">
+              {/* Export button */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg text-navy">Separate Platform Revenue Reports</h3>
+                  <p className="text-xs text-navy-secondary">Strictly distinguishes Household vs Marketplace streams</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const blob = new Blob([JSON.stringify(financials, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `nestsync-financial-report-${Date.now()}.json`;
+                    a.click();
+                  }}
+                  className="px-4 py-2 bg-navy hover:bg-navy-secondary text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" /> Export Financial Report
+                </button>
+              </div>
+
+              {/* Household Revenue Card */}
+              <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-bold text-sm text-navy">Household Premium Subscriptions (₹99 / 6-mo)</h4>
+                  <span className="font-black text-sm text-navy">
+                    Total: ₹{(financials.household_subscriptions.gross_revenue_paise / 100).toFixed(2)}
                   </span>
                 </div>
-
-                <form onSubmit={handleSaveFeeSettings} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {/* Fee Enabled Switch */}
-                    <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10 flex flex-col justify-between">
-                      <div>
-                        <label className="block text-xs font-bold text-navy mb-1">Marketplace Fee</label>
-                        <p className="text-[11px] text-mutedblue-dark">Enable or disable transaction fee collection.</p>
-                      </div>
-                      <div className="mt-3 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setFeeSettings({ ...feeSettings, marketplace_fee_enabled: !feeSettings.marketplace_fee_enabled })}
-                          className={`w-12 h-6 rounded-full transition-colors relative ${
-                            feeSettings.marketplace_fee_enabled ? "bg-emerald-500" : "bg-gray-300"
-                          }`}
-                        >
-                          <span
-                            className={`w-5 h-5 rounded-full bg-white shadow-md absolute top-0.5 transition-transform ${
-                              feeSettings.marketplace_fee_enabled ? "right-0.5" : "left-0.5"
-                            }`}
-                          />
-                        </button>
-                        <span className="text-xs font-bold text-navy">
-                          {feeSettings.marketplace_fee_enabled ? "Enabled" : "Disabled"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Fee Amount (in Rupees) */}
-                    <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
-                      <label className="block text-xs font-bold text-navy mb-1">Fee Amount (₹ INR)</label>
-                      <p className="text-[11px] text-mutedblue-dark mb-2">Default is ₹20 (2,000 paise).</p>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-xs font-bold text-navy">₹</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={feeSettings.marketplace_fee_amount_paise / 100}
-                          onChange={(e) =>
-                            setFeeSettings({
-                              ...feeSettings,
-                              marketplace_fee_amount_paise: Math.round(parseFloat(e.target.value || "0") * 100),
-                            })
-                          }
-                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-navy/15 text-xs font-bold text-navy bg-white focus:outline-none focus:border-coral"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Fee Policy Selector */}
-                    <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
-                      <label className="block text-xs font-bold text-navy mb-1">Fee Collection Policy</label>
-                      <p className="text-[11px] text-mutedblue-dark mb-2">Who bears the fee?</p>
-                      <select
-                        value={feeSettings.marketplace_fee_policy}
-                        onChange={(e) =>
-                          setFeeSettings({
-                            ...feeSettings,
-                            marketplace_fee_policy: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs font-bold text-navy bg-white focus:outline-none focus:border-coral"
-                      >
-                        <option value="seller_fee">Seller Fee (Deducted from seller)</option>
-                        <option value="buyer_fee">Buyer Fee (Charged to buyer)</option>
-                        <option value="both_fee">Both (Split ₹20 each)</option>
-                        <option value="combined_fee">Single Combined Fee (₹20 by buyer)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="submit"
-                      disabled={savingFeeSettings}
-                      className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
-                    >
-                      {savingFeeSettings ? "Saving..." : "Save Policy Configuration"}
-                    </button>
-                  </div>
-                </form>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold">
+                        <th className="pb-2">Order ID</th>
+                        <th className="pb-2">Plan</th>
+                        <th className="pb-2">Amount</th>
+                        <th className="pb-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-cream">
+                      {financials.household_subscriptions.transactions.map((tx: any) => (
+                        <tr key={tx.id}>
+                          <td className="py-2.5 font-mono text-[11px]">{tx.razorpay_order_id}</td>
+                          <td className="py-2.5 uppercase font-bold text-coral">{tx.plan_id}</td>
+                          <td className="py-2.5 font-bold">₹{(tx.amount_paise / 100).toFixed(2)}</td>
+                          <td className="py-2.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              {tx.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              {/* SEPARATE MARKETPLACE REVENUE REPORT */}
-              {feeReport && (
-                <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold text-base text-navy">Marketplace Revenue Analytics</h3>
-                      <p className="text-xs text-navy-secondary">
-                        Strictly separated from annual subscription revenues.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const blob = new Blob([JSON.stringify(feeReport, null, 2)], { type: "application/json" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `nestsync-marketplace-fee-report-${Date.now()}.json`;
-                        a.click();
-                      }}
-                      className="px-3.5 py-2 rounded-xl bg-navy text-white text-xs font-bold hover:bg-navy-secondary transition-colors flex items-center gap-1.5"
-                    >
-                      <Download className="w-3.5 h-3.5" /> Export Fee Report (JSON)
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                    <div className="p-4 rounded-2xl bg-cream-light border border-cream">
-                      <p className="text-mutedblue-dark font-bold">Gross Marketplace Fees</p>
-                      <p className="text-2xl font-black text-navy mt-1">
-                        ₹{(feeReport.gross_marketplace_fees_collected_paise / 100).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-cream-light border border-cream">
-                      <p className="text-mutedblue-dark font-bold">Total Refunds Processed</p>
-                      <p className="text-2xl font-black text-red-500 mt-1">
-                        -₹{(feeReport.total_refunded_paise / 100).toFixed(2)}
-                      </p>
-                      <p className="text-[10px] text-mutedblue-dark">{feeReport.refunded_transactions_count} refunds</p>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-cream-light border border-cream">
-                      <p className="text-mutedblue-dark font-bold">Net Marketplace Revenue</p>
-                      <p className="text-2xl font-black text-emerald-600 mt-1">
-                        ₹{(feeReport.net_marketplace_revenue_paise / 100).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-2xl bg-cream-light border border-cream">
-                      <p className="text-mutedblue-dark font-bold">Completed / Pending Orders</p>
-                      <p className="text-2xl font-black text-navy mt-1">
-                        {feeReport.completed_transactions_count} / {feeReport.pending_transactions_count}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* MARKETPLACE TRANSACTIONS TABLE */}
+              {/* Marketplace Membership Revenue Card */}
               <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-base text-navy">Marketplace Transactions & Fee Ledger</h3>
-                  <span className="text-xs text-mutedblue-dark">{marketplaceTransactions.length} records</span>
+                <div className="flex justify-between items-center">
+                  <h4 className="font-bold text-sm text-navy">Marketplace Memberships (₹20 / 6-mo)</h4>
+                  <span className="font-black text-sm text-coral">
+                    Total: ₹{(financials.marketplace_memberships.gross_revenue_paise / 100).toFixed(2)}
+                  </span>
                 </div>
-
-                {marketplaceTransactions.length === 0 ? (
-                  <p className="text-xs text-mutedblue-dark py-8 text-center">No marketplace transactions yet.</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead>
-                        <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold tracking-wider">
-                          <th className="pb-3">Order ID</th>
-                          <th className="pb-3">Item Price</th>
-                          <th className="pb-3">Buyer Fee</th>
-                          <th className="pb-3">Seller Fee</th>
-                          <th className="pb-3">Total Fee</th>
-                          <th className="pb-3">Policy</th>
-                          <th className="pb-3">Status</th>
-                          <th className="pb-3 text-right">Actions</th>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold">
+                        <th className="pb-2">Order ID</th>
+                        <th className="pb-2">Price</th>
+                        <th className="pb-2">Status</th>
+                        <th className="pb-2">Validity End</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-cream">
+                      {financials.marketplace_memberships.memberships.map((m: any) => (
+                        <tr key={m.id}>
+                          <td className="py-2.5 font-mono text-[11px]">{m.razorpay_order_id}</td>
+                          <td className="py-2.5 font-bold">₹{(m.price_paise / 100).toFixed(2)}</td>
+                          <td className="py-2.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              {m.status}
+                            </span>
+                          </td>
+                          <td className="py-2.5 text-mutedblue-dark">
+                            {new Date(m.current_period_end).toLocaleDateString()}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-cream">
-                        {marketplaceTransactions.map((tx) => (
-                          <tr key={tx.id} className="hover:bg-cream/30">
-                            <td className="py-3 font-mono text-[11px] font-bold text-navy">
-                              {tx.razorpay_order_id}
-                              {tx.is_simulation && (
-                                <span className="ml-1 text-[9px] px-1 py-0.2 bg-blue-100 text-blue-700 rounded font-bold">
-                                  SIM
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-3 font-bold text-navy">₹{(tx.item_price_paise / 100).toFixed(2)}</td>
-                            <td className="py-3 text-coral font-semibold">₹{(tx.buyer_fee_paise / 100).toFixed(2)}</td>
-                            <td className="py-3 text-coral font-semibold">₹{(tx.seller_fee_paise / 100).toFixed(2)}</td>
-                            <td className="py-3 font-bold text-navy">₹{(tx.total_fee_paise / 100).toFixed(2)}</td>
-                            <td className="py-3 text-[11px] capitalize text-mutedblue-dark">
-                              {tx.fee_policy_applied?.replace("_", " ")}
-                            </td>
-                            <td className="py-3">
-                              <span
-                                className={`px-2 py-0.5 rounded font-bold text-[10px] uppercase ${
-                                  tx.status === "completed"
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : tx.status === "refunded"
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-amber-100 text-amber-700"
-                                }`}
-                              >
-                                {tx.status}
-                              </span>
-                            </td>
-                            <td className="py-3 text-right">
-                              {tx.status === "completed" && (
-                                <button
-                                  onClick={() => {
-                                    setSelectedTxForRefund(tx);
-                                    setShowRefundModal(true);
-                                  }}
-                                  className="px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-bold text-[11px] border border-red-200 transition-colors"
-                                >
-                                  Refund Fee
-                                </button>
-                              )}
-                              {tx.status === "refunded" && (
-                                <span className="text-[10px] text-mutedblue-dark">
-                                  Refunded: {tx.refund_reason || "Admin processed"}
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
 
-          {/* 3. USER MANAGEMENT */}
+          {/* 4. COMMUNITY MANAGEMENT (Feature 3 & 10) */}
+          {activeSection === "communities" && (
+            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-base text-navy">Community & Township Management</h3>
+                  <p className="text-xs text-navy-secondary">Manage predefined gated communities and residential societies</p>
+                </div>
+              </div>
+
+              {/* Add Community Form */}
+              <form onSubmit={handleAddCommunity} className="flex gap-3">
+                <input
+                  type="text"
+                  required
+                  value={newCommName}
+                  onChange={(e) => setNewCommName(e.target.value)}
+                  placeholder="New community name (e.g. SRM Royal Palms)"
+                  className="flex-1 px-4 py-2 rounded-xl border border-navy/15 text-xs text-navy"
+                />
+                <input
+                  type="text"
+                  value={newCommCity}
+                  onChange={(e) => setNewCommCity(e.target.value)}
+                  placeholder="City"
+                  className="w-32 px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy"
+                />
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-coral text-white text-xs font-bold hover:bg-coral-hover"
+                >
+                  Add Community
+                </button>
+              </form>
+
+              {/* Community List */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {communitiesList.map((c) => (
+                  <div key={c.id} className="p-4 rounded-2xl bg-cream/40 border border-navy/10 flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-xs text-navy">{c.name}</p>
+                      <p className="text-[10px] text-mutedblue-dark">{c.city} • Created {new Date(c.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteCommunity(c.id)}
+                      className="text-red-500 hover:text-red-700 text-xs font-bold"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 5. HOUSEHOLDS MANAGEMENT */}
+          {activeSection === "households" && (
+            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
+              <h3 className="font-bold text-base text-navy">Registered Flats & Identity Hierarchy</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {householdsList.map((h) => (
+                  <div key={h.id} className="p-4 rounded-2xl bg-cream-light border border-cream space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm text-navy">{h.full_identity || h.name}</h4>
+                      <span className="font-mono px-2 py-0.5 rounded bg-white text-[10px] font-bold text-coral">
+                        {h.invite_code}
+                      </span>
+                    </div>
+                    <p className="text-xs text-mutedblue-dark">
+                      Community: {h.community_name || "SRM Area"} • Building: {h.building || "—"} • Flat: {h.flat_number || "—"}
+                    </p>
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-cream">
+                      <span className="text-navy font-semibold">{h.members_count} Residents</span>
+                      <span className="text-mutedblue-dark">Owner: {h.owner?.full_name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 6. USERS MANAGEMENT */}
           {activeSection === "users" && (
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-base text-navy">Registered User Accounts</h3>
-                <span className="text-xs text-mutedblue-dark">{usersList.length} total users</span>
+                <h3 className="font-bold text-base text-navy">User Accounts</h3>
+                <span className="text-xs text-mutedblue-dark">{usersList.length} total</span>
               </div>
-
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold tracking-wider">
-                      <th className="pb-3">User</th>
-                      <th className="pb-3">Email</th>
-                      <th className="pb-3">Role</th>
-                      <th className="pb-3">Tier</th>
-                      <th className="pb-3">Status</th>
-                      <th className="pb-3 text-right">Actions</th>
+                    <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold">
+                      <th className="pb-2">Name</th>
+                      <th className="pb-2">Email</th>
+                      <th className="pb-2">Role</th>
+                      <th className="pb-2">Status</th>
+                      <th className="pb-2 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-cream">
                     {usersList.map((u) => (
-                      <tr key={u.id} className="hover:bg-cream/30">
-                        <td className="py-3 font-bold text-navy">{u.full_name}</td>
-                        <td className="py-3 text-mutedblue-dark">{u.email}</td>
-                        <td className="py-3">
-                          <span className="font-mono px-2 py-0.5 rounded bg-cream text-[10px] uppercase font-bold">
-                            {u.role}
-                          </span>
-                        </td>
-                        <td className="py-3 capitalize text-navy font-semibold">{u.subscription_tier}</td>
-                        <td className="py-3">
-                          <span
-                            className={`px-2 py-0.5 rounded font-bold text-[10px] uppercase ${
-                              u.status === "active"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
+                      <tr key={u.id}>
+                        <td className="py-2.5 font-bold text-navy">{u.full_name}</td>
+                        <td className="py-2.5 text-mutedblue-dark">{u.email}</td>
+                        <td className="py-2.5 uppercase font-mono text-[10px]">{u.role}</td>
+                        <td className="py-2.5">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            u.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                          }`}>
                             {u.status}
                           </span>
                         </td>
-                        <td className="py-3 text-right space-x-2">
+                        <td className="py-2.5 text-right">
                           {u.status === "active" ? (
                             <button
                               onClick={() => handleUpdateUserStatus(u.id, "suspended")}
@@ -667,61 +659,29 @@ export default function AdminPanelPage() {
             </div>
           )}
 
-          {/* 4. HOUSEHOLDS */}
-          {activeSection === "households" && (
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
-              <h3 className="font-bold text-base text-navy">Shared Flat & Household Registries</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {householdsList.map((h) => (
-                  <div key={h.id} className="p-4 rounded-2xl bg-cream-light border border-cream space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-sm text-navy">{h.name}</h4>
-                      <span className="font-mono px-2 py-0.5 rounded bg-white text-[10px] font-bold text-coral">
-                        {h.invite_code}
-                      </span>
-                    </div>
-                    <p className="text-xs text-mutedblue-dark">{h.address || "SRM Campus Area"}</p>
-                    <div className="flex items-center justify-between text-xs pt-2 border-t border-cream">
-                      <span className="text-navy font-semibold">{h.members_count} Residents</span>
-                      <span className="text-mutedblue-dark">Admin: {h.creator?.full_name}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 5. MODERATION */}
+          {/* 7. MODERATION */}
           {activeSection === "moderation" && (
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
-              <h3 className="font-bold text-base text-navy">Marketplace Listing Moderation</h3>
+              <h3 className="font-bold text-base text-navy">Marketplace Listings Moderation</h3>
               <div className="divide-y divide-cream">
                 {moderationList.map((m) => (
-                  <div key={m.id} className="py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-cream overflow-hidden">
-                        {m.images && m.images[0] ? (
-                          <img src={m.images[0].image_url} alt="" className="w-full h-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-navy">{m.title}</h4>
-                        <p className="text-xs text-mutedblue-dark">
-                          ₹{m.selling_price_paise / 100} • Category: {m.category} • Status: <span className="font-bold uppercase text-coral">{m.status}</span>
-                        </p>
-                      </div>
+                  <div key={m.id} className="py-3.5 flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-navy">{m.title}</h4>
+                      <p className="text-xs text-mutedblue-dark">
+                        ₹{m.selling_price_paise / 100} • Status: <span className="font-bold uppercase text-coral">{m.status}</span>
+                      </p>
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => handleModerateListing(m.id, "approve")}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-xs hover:bg-emerald-200"
+                        className="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleModerateListing(m.id, "remove")}
-                        className="px-3 py-1.5 rounded-xl bg-coral-light text-coral font-bold text-xs hover:bg-coral hover:text-white"
+                        className="px-3 py-1 bg-red-100 text-red-700 font-bold text-xs rounded-xl"
                       >
                         Remove
                       </button>
@@ -732,117 +692,95 @@ export default function AdminPanelPage() {
             </div>
           )}
 
-          {/* 6. VERIFIED SUBSCRIPTION TRANSACTIONS */}
-          {activeSection === "transactions" && (
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
-              <h3 className="font-bold text-base text-navy">Verified Annual Subscription Payment Ledger</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-cream text-mutedblue-dark uppercase font-bold tracking-wider">
-                      <th className="pb-3">Order ID</th>
-                      <th className="pb-3">Plan</th>
-                      <th className="pb-3">Amount</th>
-                      <th className="pb-3">Status</th>
-                      <th className="pb-3">Verification</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-cream">
-                    {transactionsList.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-cream/30">
-                        <td className="py-3 font-mono text-[11px] font-bold text-navy">{tx.razorpay_order_id}</td>
-                        <td className="py-3 uppercase font-bold text-coral">{tx.plan_id}</td>
-                        <td className="py-3 font-bold text-navy">₹{(tx.amount_paise / 100).toFixed(2)}</td>
-                        <td className="py-3">
-                          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">
-                            {tx.status}
-                          </span>
-                        </td>
-                        <td className="py-3 text-mutedblue-dark text-[11px]">
-                          {tx.is_simulation ? "Simulated Signature" : "HMAC-SHA256 Verified"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* 8. TASK & CUSTOM BILL ANALYTICS (Feature 10) */}
+          {activeSection === "analytics" && analytics && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
+                <h3 className="font-bold text-base text-navy">Custom Bill Category Usage</h3>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
+                    <p className="text-mutedblue-dark font-bold">Total Bills</p>
+                    <p className="text-2xl font-black text-navy mt-1">{analytics.total_bills}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
+                    <p className="text-mutedblue-dark font-bold">Custom Category Bills</p>
+                    <p className="text-2xl font-black text-coral mt-1">{analytics.custom_bill_count}</p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <p className="text-xs font-bold text-navy mb-2">Custom Categories Created by Users:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {analytics.custom_categories_used.length === 0 ? (
+                      <span className="text-xs text-mutedblue-dark">No custom categories used yet.</span>
+                    ) : (
+                      analytics.custom_categories_used.map((cat: string, idx: number) => (
+                        <span key={idx} className="px-3 py-1 rounded-full bg-cream font-bold text-xs text-coral">
+                          {cat}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
+                <h3 className="font-bold text-base text-navy">Chore & Task Assignment Delegation</h3>
+                <div className="grid grid-cols-3 gap-4 text-xs">
+                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
+                    <p className="text-mutedblue-dark font-bold">Total Tasks</p>
+                    <p className="text-2xl font-black text-navy mt-1">{analytics.total_tasks}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
+                    <p className="text-mutedblue-dark font-bold">Pending Tasks</p>
+                    <p className="text-2xl font-black text-amber-500 mt-1">{analytics.pending_tasks}</p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-cream/40 border border-navy/10">
+                    <p className="text-mutedblue-dark font-bold">Completed Tasks</p>
+                    <p className="text-2xl font-black text-emerald-600 mt-1">{analytics.completed_tasks}</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* 7. REPORTS & DISPUTES */}
+          {/* 9. REPORTS */}
           {activeSection === "reports" && (
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
               <h3 className="font-bold text-base text-navy">User Reports & Complaints</h3>
-              {reportsList.length === 0 ? (
-                <p className="text-xs text-mutedblue-dark py-8 text-center">No outstanding reports.</p>
-              ) : (
-                <div className="divide-y divide-cream">
-                  {reportsList.map((rep) => (
-                    <div key={rep.id} className="py-4 flex items-center justify-between">
+              <div className="divide-y divide-cream text-xs">
+                {reportsList.length === 0 ? (
+                  <p className="py-6 text-center text-mutedblue-dark">No outstanding reports.</p>
+                ) : (
+                  reportsList.map((r) => (
+                    <div key={r.id} className="py-3 flex justify-between items-center">
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-coral/20 text-coral font-bold text-[10px] uppercase">
-                            Target: {rep.target_type}
-                          </span>
-                          <span className="text-xs font-bold text-navy">{rep.reason}</span>
-                        </div>
-                        <p className="text-xs text-navy-secondary mt-1">{rep.details}</p>
+                        <p className="font-bold text-navy">{r.reason}</p>
+                        <p className="text-mutedblue-dark">{r.details}</p>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleResolveReport(rep.id, "resolved")}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-xs"
-                        >
-                          Resolve
-                        </button>
-                        <button
-                          onClick={() => handleResolveReport(rep.id, "dismissed")}
-                          className="px-3 py-1.5 rounded-xl bg-cream text-navy font-bold text-xs"
-                        >
-                          Dismiss
-                        </button>
-                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-cream">
+                        {r.status}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </div>
           )}
 
-          {/* 8. AUDIT LOGS */}
+          {/* 10. AUDIT LOGS */}
           {activeSection === "logs" && (
             <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
               <h3 className="font-bold text-base text-navy">Administrative Security Audit Trail</h3>
               <div className="divide-y divide-cream text-xs">
                 {auditLogs.map((log) => (
-                  <div key={log.id} className="py-3 flex items-start justify-between">
+                  <div key={log.id} className="py-3 flex justify-between items-start">
                     <div>
                       <p className="font-bold font-mono text-coral text-[11px]">{log.action}</p>
                       <p className="text-navy-secondary mt-0.5">{log.details}</p>
                     </div>
-                    <span className="text-[10px] text-mutedblue-dark shrink-0">
+                    <span className="text-[10px] text-mutedblue-dark">
                       {new Date(log.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 9. SETTINGS */}
-          {activeSection === "settings" && (
-            <div className="bg-white rounded-3xl p-6 shadow-card border border-navy/5 space-y-4">
-              <h3 className="font-bold text-base text-navy">Platform Configuration Parameters</h3>
-              <div className="space-y-3">
-                {platformSettings.map((s) => (
-                  <div key={s.key} className="p-4 rounded-2xl bg-cream-light border border-cream flex items-center justify-between">
-                    <div>
-                      <p className="font-mono text-xs font-bold text-navy">{s.key}</p>
-                      <p className="text-[11px] text-mutedblue-dark">{s.description}</p>
-                    </div>
-                    <span className="font-bold text-xs bg-white px-3 py-1 rounded-xl border border-navy/10 text-coral">
-                      {s.value}
                     </span>
                   </div>
                 ))}
@@ -851,45 +789,6 @@ export default function AdminPanelPage() {
           )}
         </div>
       </div>
-
-      {/* REFUND MODAL */}
-      {showRefundModal && selectedTxForRefund && (
-        <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-3xl p-6 shadow-elevated border border-navy/10">
-            <h3 className="font-bold text-lg text-navy mb-2">Process Marketplace Fee Refund</h3>
-            <p className="text-xs text-navy-secondary mb-4">
-              Refund fee for Order <span className="font-mono font-bold text-navy">{selectedTxForRefund.razorpay_order_id}</span>. Total fee to refund: ₹{(selectedTxForRefund.total_fee_paise / 100).toFixed(2)}. This action is recorded in the administrative audit log.
-            </p>
-            <div className="space-y-3 mb-4">
-              <label className="block text-xs font-bold text-navy">Refund Reason:</label>
-              <input
-                type="text"
-                value={refundReason}
-                onChange={(e) => setRefundReason(e.target.value)}
-                placeholder="e.g. Buyer dispute settled, order cancelled"
-                className="w-full px-3 py-2 rounded-xl border border-navy/15 text-xs text-navy focus:outline-none focus:border-coral"
-              />
-            </div>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowRefundModal(false);
-                  setSelectedTxForRefund(null);
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-navy-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleProcessRefund}
-                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md"
-              >
-                Confirm Refund
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -2,33 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { 
-  CreditCard, CheckCircle2, Sparkles, Shield, ArrowRight, 
-  Clock, Zap, Check, AlertCircle 
+  CreditCard, CheckCircle2, ShieldCheck, Sparkles, RefreshCw, 
+  ShoppingBag, Clock, AlertCircle, ArrowRight, Zap 
 } from "lucide-react";
-import { apiRequest, getStoredToken, getStoredUser, setStoredUser } from "@/lib/api";
+import { apiRequest, getStoredToken, getStoredUser } from "@/lib/api";
 
 export default function SubscriptionsPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [plans, setPlans] = useState<any[]>([]);
-  const [mySub, setMySub] = useState<any>(null);
+  const [mySubData, setMySubData] = useState<any>(null);
+  const [mktMembership, setMktMembership] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [checkingOut, setCheckingOut] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 4500);
+    setTimeout(() => setToastMsg(null), 4000);
   };
 
   useEffect(() => {
-    const token = getStoredToken();
-    if (!token) {
-      router.push("/auth/login");
-      return;
-    }
     const user = getStoredUser();
     setCurrentUser(user);
     loadData();
@@ -37,12 +34,14 @@ export default function SubscriptionsPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [plansData, subData] = await Promise.all([
+      const [plansData, subData, mktData] = await Promise.all([
         apiRequest("/subscriptions/plans"),
-        apiRequest("/subscriptions/my-subscription"),
+        getStoredToken() ? apiRequest("/subscriptions/my-subscription") : Promise.resolve(null),
+        getStoredToken() ? apiRequest("/subscriptions/marketplace-membership") : Promise.resolve(null),
       ]);
       setPlans(plansData);
-      setMySub(subData);
+      setMySubData(subData);
+      setMktMembership(mktData);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -50,58 +49,90 @@ export default function SubscriptionsPage() {
     }
   };
 
-  const handleSubscribe = async (planId: string) => {
-    setCheckoutLoading(planId);
+  // Checkout Household Plan (Free or ₹99 Premium)
+  const handleHouseholdCheckout = async (planId: string) => {
+    const token = getStoredToken();
+    if (!token) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setCheckingOut(planId);
     try {
-      // 1. Create order
       const orderRes = await apiRequest("/subscriptions/checkout", {
         method: "POST",
         body: JSON.stringify({ plan_id: planId }),
       });
 
-      if (planId === "free") {
-        showToast("Switched to Free Community Plan");
-        if (currentUser) {
-          const updated = { ...currentUser, subscription_tier: "free" };
-          setCurrentUser(updated);
-          setStoredUser(updated);
-        }
+      if (planId === "free" || orderRes.amount_paise === 0) {
+        showToast("Free Household Plan active!");
         await loadData();
         return;
       }
 
-      // 2. Local Simulation or Razorpay
+      // Simulate payment (Instant development test simulation)
       const simRes = await apiRequest(`/subscriptions/simulate-test-payment?order_id=${orderRes.order_id}`, {
         method: "POST",
       });
 
-      // 3. Verify Payment
+      // Verify payment signature
       const verifyRes = await apiRequest("/subscriptions/verify", {
         method: "POST",
         body: JSON.stringify({
-          plan_id: planId,
-          razorpay_order_id: simRes.razorpay_order_id,
+          razorpay_order_id: orderRes.order_id,
           razorpay_payment_id: simRes.razorpay_payment_id,
           razorpay_signature: simRes.razorpay_signature,
-          is_simulation: true,
+          plan_id: planId,
         }),
       });
 
-      showToast(verifyRes.message || "Payment verified & subscription activated!");
-
-      if (currentUser) {
-        const updated = { ...currentUser, subscription_tier: planId };
-        setCurrentUser(updated);
-        setStoredUser(updated);
-      }
-
+      showToast(verifyRes.message || "Premium Household Plan activated for 6 months!");
       await loadData();
     } catch (err: any) {
       showToast(err.message || "Checkout failed");
     } finally {
-      setCheckoutLoading(null);
+      setCheckingOut(null);
     }
   };
+
+  // Checkout Marketplace Membership (₹20 for 6 Months)
+  const handleMarketplaceMembershipCheckout = async () => {
+    const token = getStoredToken();
+    if (!token) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setCheckingOut("marketplace_membership");
+    try {
+      const orderRes = await apiRequest("/subscriptions/marketplace-membership/checkout", {
+        method: "POST",
+      });
+
+      const simRes = await apiRequest(`/subscriptions/simulate-test-payment?order_id=${orderRes.order_id}`, {
+        method: "POST",
+      });
+
+      const verifyRes = await apiRequest("/subscriptions/marketplace-membership/verify", {
+        method: "POST",
+        body: JSON.stringify({
+          razorpay_order_id: orderRes.order_id,
+          razorpay_payment_id: simRes.razorpay_payment_id,
+          razorpay_signature: simRes.razorpay_signature,
+        }),
+      });
+
+      showToast(verifyRes.message || "Marketplace Membership activated for six months!");
+      await loadData();
+    } catch (err: any) {
+      showToast(err.message || "Membership checkout failed");
+    } finally {
+      setCheckingOut(null);
+    }
+  };
+
+  const hasActiveMkt = mktMembership?.membership?.has_active_membership;
+  const isPremiumOwner = mySubData?.subscription_tier === "premium";
 
   return (
     <div className="min-h-screen bg-cream text-navy flex flex-col">
@@ -114,110 +145,218 @@ export default function SubscriptionsPage() {
         </div>
       )}
 
-      {/* HEADER */}
-      <div className="bg-navy text-white px-4 sm:px-6 lg:px-8 py-12 border-b border-navy-secondary">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-coral/20 text-coral text-xs font-bold uppercase tracking-wider mb-3">
-            <CreditCard className="w-3.5 h-3.5" /> Razorpay Test Mode & Transparent Annual Pricing
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Simple Annual Subscriptions</h1>
-          <p className="text-sm text-mutedblue mt-2 max-w-xl mx-auto">
-            Upgrade your household experience with unlimited AI voice automation, custom splits, and moving out bundle showcases.
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1 space-y-12">
+        {/* HEADER */}
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <span className="px-3.5 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-coral-light text-coral">
+            Transparent Pricing
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-black text-navy tracking-tight">
+            Plans for Shared Living & Community Commerce
+          </h1>
+          <p className="text-sm text-navy-secondary">
+            Household subscriptions are tied to the flat owner (flatmates join free). Marketplace membership is ₹20 for 6 months.
           </p>
-
-          {/* Current Tier Badge */}
-          {mySub && (
-            <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-navy-secondary border border-white/10 text-xs">
-              <span className="text-mutedblue">Your Active Plan:</span>
-              <span className="font-bold text-coral uppercase tracking-wide">
-                {mySub.subscription_tier || "free"}
-              </span>
-              {mySub.subscription?.current_period_end && (
-                <span className="text-mutedblue border-l border-white/10 pl-2">
-                  Renews: {new Date(mySub.subscription.current_period_end).toLocaleDateString()}
-                </span>
-              )}
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* PLANS COMPARISON GRID */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans.map((plan) => {
-            const isCurrent = (mySub?.subscription_tier || "free") === plan.id;
-            const isPopular = plan.id === "basic_plus";
-            return (
-              <div
-                key={plan.id}
-                className={`bg-white rounded-3xl p-8 flex flex-col justify-between shadow-card relative transition-all ${
-                  isPopular ? "border-2 border-coral shadow-elevated" : "border border-navy/5"
-                }`}
-              >
-                {isPopular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-coral text-white text-[10px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-md">
-                    Roommate Favorite
-                  </span>
-                )}
+        {/* SECTION 1: MARKETPLACE MEMBERSHIP (₹20 FOR 6 MONTHS) */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/5">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div className="md:col-span-8 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 rounded-xl bg-coral/10 text-coral flex items-center justify-center font-bold">
+                  <ShoppingBag className="w-4 h-4" />
+                </span>
+                <h2 className="text-xl font-black text-navy">Marketplace Membership</h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                  Fixed ₹20 / 6 Months
+                </span>
+              </div>
 
-                <div>
-                  <h3 className="font-bold text-xl text-navy">{plan.name}</h3>
-                  <p className="text-xs text-navy-secondary mt-1">{plan.description}</p>
+              <p className="text-xs text-navy-secondary leading-relaxed">
+                Browsing the marketplace is always 100% free for everyone. To buy or publish listings, users purchase an active 6-month membership.
+                One membership unlocks both unlimited buying and unlimited selling with <strong>zero per-listing charges</strong>.
+              </p>
 
-                  <div className="mt-6 mb-6">
-                    <span className="text-4xl font-black text-navy">₹{plan.price_inr_year}</span>
-                    <span className="text-xs text-mutedblue-dark ml-1">/year</span>
-                  </div>
-
-                  <ul className="space-y-3 text-xs text-navy-secondary">
-                    {plan.features?.map((f: string, i: number) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs font-semibold text-navy">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Free product browsing
                 </div>
-
-                <div className="mt-8 pt-6 border-t border-cream">
-                  {isCurrent ? (
-                    <button
-                      disabled
-                      className="w-full py-3 rounded-xl bg-cream text-navy font-bold text-xs cursor-default flex items-center justify-center gap-1.5"
-                    >
-                      <Check className="w-4 h-4 text-emerald-600" /> Current Plan
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleSubscribe(plan.id)}
-                      disabled={checkoutLoading === plan.id}
-                      className={`w-full py-3 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 ${
-                        isPopular
-                          ? "bg-coral hover:bg-coral-hover text-white"
-                          : "bg-navy hover:bg-navy-secondary text-white"
-                      }`}
-                    >
-                      {checkoutLoading === plan.id
-                        ? "Verifying Payment..."
-                        : `Activate ${plan.name} (₹${plan.price_inr_year})`}
-                    </button>
-                  )}
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Unlimited listings
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Direct buyer checkout
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> 6 months validity
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Zero extra transaction fees
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Simple one-click renewal
                 </div>
               </div>
-            );
-          })}
+            </div>
+
+            <div className="md:col-span-4 bg-cream/40 rounded-2xl p-6 border border-navy/10 text-center space-y-4">
+              <div>
+                <p className="text-[11px] uppercase font-bold text-mutedblue-dark">Marketplace Access</p>
+                <div className="mt-1 flex items-baseline justify-center gap-1">
+                  <span className="text-3xl font-black text-navy">₹20</span>
+                  <span className="text-xs font-bold text-navy-secondary">/ 6 Months</span>
+                </div>
+              </div>
+
+              {hasActiveMkt ? (
+                <div className="space-y-2">
+                  <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" /> Active Membership
+                  </div>
+                  <p className="text-[10px] text-mutedblue-dark">
+                    Valid until: {new Date(mktMembership.membership.expires_at).toLocaleDateString()}
+                  </p>
+                  <button
+                    onClick={handleMarketplaceMembershipCheckout}
+                    disabled={checkingOut === "marketplace_membership"}
+                    className="w-full py-2 rounded-xl bg-navy hover:bg-navy-secondary text-white text-xs font-bold transition-all"
+                  >
+                    {checkingOut === "marketplace_membership" ? "Renewing..." : "Renew Membership (+6 Months)"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleMarketplaceMembershipCheckout}
+                  disabled={checkingOut === "marketplace_membership"}
+                  className="w-full py-3 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Zap className="w-4 h-4" />
+                  {checkingOut === "marketplace_membership" ? "Activating..." : "Get Membership for ₹20"}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Security / Razorpay Assurance Note */}
-        <div className="mt-12 bg-white rounded-3xl p-6 shadow-card border border-navy/5 flex flex-col sm:flex-row items-center gap-4 text-xs text-navy-secondary">
-          <div className="w-10 h-10 rounded-2xl bg-coral/10 text-coral flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5" />
+        {/* SECTION 2: HOUSEHOLD SUBSCRIPTION (FREE VS PREMIUM) */}
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-black text-navy">Household Subscription Plans</h2>
+            <p className="text-xs text-navy-secondary mt-1">
+              The household owner’s subscription controls flatmate capacity. All flatmates join without paying individual fees.
+            </p>
           </div>
-          <div>
-            <p className="font-bold text-sm text-navy">Secure Server-Side Cryptographic Signature Verification</p>
-            <p className="mt-0.5">
-              NestSync implements server-side HMAC-SHA256 signature verification and webhook idempotency checks. Subscriptions are never activated purely on frontend client signals.
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* 1. FREE HOUSEHOLD PLAN */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-card border border-navy/5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-extrabold text-lg text-navy">Free Household Plan</h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-cream text-navy">
+                    Default
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1 my-3">
+                  <span className="text-3xl font-black text-navy">₹0</span>
+                  <span className="text-xs font-bold text-mutedblue-dark">/ Free Forever</span>
+                </div>
+                <p className="text-xs text-navy-secondary mb-6">
+                  Perfect for smaller flats. Up to <strong>3 members total</strong> (including the owner).
+                </p>
+
+                <div className="space-y-2.5 text-xs text-navy">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Max 3 household members total
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Equal expense splitting down to paise
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Recurring & custom bill categories
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Shared shopping lists
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> Task assignment to flatmates
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-4 border-t border-cream">
+                <button
+                  disabled={!isPremiumOwner}
+                  className="w-full py-3 rounded-2xl bg-cream text-navy font-bold text-xs"
+                >
+                  {!isPremiumOwner ? "Current Default Plan" : "Downgrade to Free"}
+                </button>
+              </div>
+            </div>
+
+            {/* 2. PREMIUM HOUSEHOLD PLAN */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-elevated border-2 border-coral relative flex flex-col justify-between">
+              <span className="absolute -top-3 right-6 bg-coral text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md">
+                Unlimited Flatmates
+              </span>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-extrabold text-lg text-navy">Premium Household Plan</h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-coral-light text-coral">
+                    ₹99 / 6 Months
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1 my-3">
+                  <span className="text-4xl font-black text-coral">₹99</span>
+                  <span className="text-xs font-bold text-navy-secondary">/ 6 Months Validity</span>
+                </div>
+                <p className="text-xs text-navy-secondary mb-6">
+                  Add unlimited flatmates for six months. Flatmates join and participate without paying individual subscriptions.
+                </p>
+
+                <div className="space-y-2.5 text-xs text-navy font-semibold">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Unlimited household members for 6 months
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Only owner pays — flatmates join free
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> No automatic member removal if expired
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Unlimited custom bill categories & history
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-coral shrink-0" /> Full task assignment & flatmate delegation
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-4 border-t border-cream">
+                <button
+                  onClick={() => handleHouseholdCheckout("premium")}
+                  disabled={checkingOut === "premium"}
+                  className="w-full py-3 rounded-2xl bg-coral hover:bg-coral-hover text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {checkingOut === "premium" ? "Activating..." : isPremiumOwner ? "Renew Premium for ₹99" : "Upgrade to Premium (₹99)"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* PAYMENT HISTORY & SECURITY NOTICE */}
+        <div className="p-6 rounded-3xl bg-cream/40 border border-navy/10 flex items-start gap-4">
+          <ShieldCheck className="w-6 h-6 text-emerald-600 shrink-0 mt-1" />
+          <div className="space-y-1 text-xs">
+            <h4 className="font-bold text-navy">Secure Payments & Test Mode</h4>
+            <p className="text-navy-secondary leading-relaxed">
+              All transactions are cryptographically verified server-side with HMAC-SHA256 signatures and idempotency protection.
+              In local development mode, test transactions generate simulated credentials and activate subscriptions instantly.
             </p>
           </div>
         </div>

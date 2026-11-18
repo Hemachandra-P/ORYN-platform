@@ -1,6 +1,6 @@
 # NestSync — Unified Household Management & Community Marketplace Platform
 
-NestSync is a production-structured digital platform for flats, apartments, hostels, PGs, shared accommodations and student households. It combines financial budgeting, collaborative chores, AI intent parsing, and a second-hand community marketplace into one modern lifestyle product.
+NestSync is a production-structured digital platform for flats, apartments, hostels, PGs, shared accommodations, and student households. It combines financial budgeting, collaborative chores, member management, and a community marketplace into one modern lifestyle product.
 
 ---
 
@@ -34,43 +34,61 @@ D:\SRM_website/
 
 ---
 
-## 🛒 Marketplace Listing Management & Protected Transaction Fees
+## 💎 Consolidated Pricing & Features Architecture
 
-### 1. Dedicated "My Listings" Management (`/marketplace/my-listings`)
-- Authenticated sellers have a centralized command center for all items they have created.
-- Filter by status tabs: **All**, **Active**, **Sold**, **Paused**, and **Draft**.
-- Real-time **Enquiries count** tracked per listing from buyer chat conversations.
-- Inline actions:
-  - **Edit Listing**: Modal allowing updates to title, price, description, condition, and location.
-  - **Mark as Sold**: Confirmation dialog changes status to `sold` and records the exact `sold_at` timestamp.
-  - **Reactivate**: Allows sellers to re-open sold listings if a deal falls through.
-  - **Delete Listing**: Confirmation dialog with backend ownership enforcement, soft-deleting the item (`status = "deleted"`) and removing it from public marketplace searches while preserving audit history.
+### 1. Marketplace Membership Subscription (₹20 / 6 Months)
+- **Free Browsing**: All registered users can browse, search, and view marketplace products for free.
+- **₹20 Membership**: To publish listings (selling) or initiate buying transactions (checkout), users purchase a **6-Month Marketplace Membership** for ₹20 (2,000 paise).
+- **Unlimited Transactions**: Once active, members can publish unlimited listings and execute purchases with ₹0 per-listing transaction fees.
+- **Expiration & Renewal**: Validity lasts exactly 6 months. Expired users retain browsing access and can renew anytime from `/subscriptions`.
 
-### 2. Marketplace Protection & Configurable ₹20 Transaction Fee
-- **Configurable Platform Policies**: Supported in the database and manageable via the Admin Panel:
-  1. `seller_fee`: Deducted from seller proceeds (e.g. ₹20).
-  2. `buyer_fee`: Charged directly to the buyer at checkout (e.g. ₹20).
-  3. `both_fee`: Shared ₹20 fee split evenly between buyer and seller.
-  4. `combined_fee`: Single combined fee paid by the buyer.
-- **Fair Fee Principle**: Users are **never** charged merely for browsing items or sending inquiry messages to sellers.
-- **Protected Checkout Flow**:
-  1. `/marketplace/fee-preview`: Transparent fee breakdown preview without charging.
-  2. `/marketplace/transactions/checkout`: Validates item status (`active`), prevents simultaneous duplicate buyer checkouts/reservations, calculates fees according to the current policy, and issues a Razorpay order.
-  3. `/marketplace/transactions/simulate-payment`: Fast local sandbox simulation generating cryptographic mock HMAC-SHA256 signatures.
-  4. `/marketplace/transactions/verify`: Server-side signature verification, idempotency protection (duplicate webhooks/calls do not duplicate fees), and automatically sets listing status to `sold`.
-- **Inquiry Protection**: New purchase enquiries via chat are strictly blocked (400 Bad Request) on `sold` or `deleted` items while existing chat threads remain accessible.
+### 2. Household Subscriptions & Member Limits
+- **Free Household Plan (₹0)**: Maximum **3 members total** (including the owner). Full access to shared expenses, bills, shopping lists, and chores.
+- **Premium Household Plan (₹99 / 6 Months)**: **Unlimited household members** (subject to platform abuse limits).
+- **Flatmates Join Free**: Only the household owner pays for the Premium plan. Flatmates join without individual subscriptions.
+- **Graceful Expiration**: If the owner's subscription expires, existing members are never kicked out. New joins are blocked until the owner renews or membership drops below 3.
 
-### 3. Creator & Admin Panel Marketplace Controls (`/admin`)
-- **Marketplace Fee Configuration**:
-  - Live toggle to enable/disable marketplace transaction fees.
-  - Editable fee amount (default ₹20 / 2,000 paise).
-  - Policy selector (`seller_fee`, `buyer_fee`, `both_fee`, `combined_fee`).
-- **Revenue Separation**: Marketplace transaction revenues are tracked and reported **strictly separated** from annual subscription revenues.
-- **Financial Ledger & Refunds**:
-  - View full ledger of completed marketplace transactions.
-  - Dedicated "Refund Fee" action calling `/admin/marketplace/transactions/{id}/refund` with audit log recording.
-  - One-click JSON export of marketplace fee reports.
-- **Dashboard Metrics**: Active listings, sold listings, deleted listings, total completed marketplace purchases, net fees collected, and pending payment counts.
+### 3. Community, Building, and Flat Hierarchy
+- Every household belongs to a structured geographic hierarchy:
+  $$\text{Community} \longrightarrow \text{Building / Tower / Block} \longrightarrow \text{Flat / Room Number}$$
+- Example: `Estancia · Tower A · Flat 404`
+- Predefined campus communities: **Estancia**, **Abode Valley**, **Mini Matrix**, with on-the-fly custom community creation supported.
+
+### 4. Household Joining & Security Controls
+- **Method A: Code + Password with Owner Approval**:
+  - Joiners enter the household's 6-character invitation code and the household's joining password (hashed with `bcrypt`).
+  - Creates a `join_request` requiring explicit owner approval before the user is admitted.
+- **Method B: Direct Email Invitation**:
+  - The owner invites a flatmate directly by email.
+  - Generates a direct invitation that the recipient accepts with one click.
+- **Owner Member Management**:
+  - Dedicated member management view at `/households`.
+  - Remove/kick members safely while strictly preserving all historical financial records and expense attributions.
+  - Password toggle, password reset, and transfer of household ownership.
+
+### 5. Multi-Image Upload for Marketplace Listings
+- Dedicated multi-file upload supporting up to **8 photographs** (JPG, PNG, WebP up to 10MB each).
+- Select cover photograph, remove, and reorder.
+- Stored locally in `apps/api/uploads/` with static asset serving at `/uploads/{filename}`.
+
+### 6. Custom Bill Categories (`OTHER (CUSTOM BILL)`)
+- In addition to standard categories (Rent, Electricity, Water, Internet, Gas), users can select `OTHER (CUSTOM BILL)`.
+- When selected, a custom bill category name is mandatory (e.g. "Maid Salary", "Security Charges", "Society Maintenance").
+
+### 7. Task Assignment to Flatmates
+- Assign chores and tasks directly to any active household flatmate via dropdown.
+- Backend stores `assigned_to_id` and automatically issues an in-app notification to the assigned flatmate.
+
+### 8. Creator & Admin Panel (`/admin`)
+- **Subscription & Marketplace Pricing Config**:
+  - Adjust marketplace membership fee (default ₹20) and validity duration.
+  - Adjust household Premium plan price (default ₹99) and free member limit (default 3).
+- **Community Management**:
+  - Create and manage verified student communities.
+- **Separated Revenue Reporting**:
+  - Independent financial ledgers for Household Subscriptions vs Marketplace Memberships.
+- **Custom Bill & Task Analytics**:
+  - Real-time breakdowns of custom bill categories and chore completion rates.
 
 ---
 
@@ -96,7 +114,7 @@ cd D:\SRM_website\apps\api
 # 2. Set the PYTHONPATH environment variable
 $env:PYTHONPATH = "D:\SRM_website\apps\api"
 
-# 3. Seed realistic development data (Users, flatmates, expenses, marketplace items, audit logs)
+# 3. Seed realistic development data
 python seed.py
 
 # 4. Start the FastAPI development server
@@ -122,7 +140,9 @@ npm run dev
 
 - **Web Application**: [http://localhost:3000](http://localhost:3000)
 - **Marketplace**: [http://localhost:3000/marketplace](http://localhost:3000/marketplace)
-- **My Listings**: [http://localhost:3000/marketplace/my-listings](http://localhost:3000/marketplace/my-listings)
+- **Sell an Item**: [http://localhost:3000/marketplace/sell](http://localhost:3000/marketplace/sell)
+- **Subscriptions & Memberships**: [http://localhost:3000/subscriptions](http://localhost:3000/subscriptions)
+- **Households & Chores**: [http://localhost:3000/households](http://localhost:3000/households)
 - **Admin Panel**: [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ---
@@ -144,7 +164,7 @@ Press `w` in the terminal to view on web, or scan the QR code with the Expo Go m
 
 ## 🧪 Running the Automated Test Suite
 
-All 12 comprehensive backend test suites run cleanly with `pytest`:
+All 15 comprehensive backend test suites pass cleanly with `pytest`:
 
 ```powershell
 cd D:\SRM_website\apps\api
@@ -159,12 +179,15 @@ $env:PYTHONPATH = "D:\SRM_website\apps\api"
 4. `test_expense_split_precision`: Penny-accurate integer paise arithmetic without float roundoff errors.
 5. `test_marketplace_browsing_and_filtering`: Category, price, and moving-out sale filters.
 6. `test_ai_intent_parsing_and_execution`: Natural language action extraction and safe validation.
-7. `test_subscription_and_payment_flow`: Annual checkout, order generation, test simulation, and signature verification.
-8. `test_admin_authorization`: Role-based privilege enforcement protecting admin endpoints.
-9. `test_marketplace_listing_management_and_mark_as_sold`: Listing update, enquiries count calculation, mark-as-sold status change, `sold_at` timestamp recording, reactivate workflow, and blocking new enquiries on sold items while preserving existing chat history.
+7. `test_subscription_and_payment_flow`: ₹99 6-month Premium checkout, order generation, test simulation, and signature verification.
+8. `test_admin_authorization`: Role-based privilege enforcement protecting admin endpoints and separated revenue reporting.
+9. `test_marketplace_listing_management_and_mark_as_sold`: Listing update, enquiries count calculation, mark-as-sold status change, `sold_at` timestamp recording, reactivate workflow, and blocking new enquiries on sold items.
 10. `test_marketplace_listing_deletion_and_ownership`: Ownership verification (sellers can delete their own; non-owners get 403 Forbidden), soft delete status, and exclusion from active search.
-11. `test_marketplace_fee_policies_and_admin_settings`: Admin authorization requirement (403 for regular users), dynamic configuration of fee amount and policies (`seller_fee`, `buyer_fee`, `both_fee`, `combined_fee`), and mathematical verification of fee splits.
-12. `test_marketplace_transaction_flow_and_idempotency`: End-to-end checkout, local simulation, HMAC-SHA256 verification, automatic mark-as-sold upon payment completion, duplicate webhook idempotency, preventing simultaneous duplicate purchases on reserved items, and admin refund handling with audit trail.
+11. `test_marketplace_membership_and_selling_buying_lock`: Free browsing allowed for all; selling and buying strictly locked (403 Forbidden) until purchasing the ₹20 6-month membership; unlocks unlimited listings and checkouts.
+12. `test_community_building_and_flat_distinction`: Hierarchy validation (`Community -> Building -> Flat`), custom community creation, and full identity string formatting.
+13. `test_household_member_limit_and_joining_password`: Free 3-member limit enforcement; requiring joining password; join request creation and owner approval workflow; upgrading owner to Premium enables adding 4th member.
+14. `test_custom_bill_category`: Creating `other` category bill requires `custom_category` name (e.g. "Maid Salary").
+15. `test_task_assignment_to_flatmate`: Assigning chore to active flatmate, verifying `assigned_to_id`, and generating in-app notification.
 
 ---
 
@@ -174,8 +197,8 @@ For instant local testing, use the pre-configured accounts:
 
 | Role | Email | Password | Details |
 | :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin@nestsync.com` | `Admin@NestSync2026!` | Access to the Creator & Admin Panel, fee controls, refunds, logs |
-| **Flat Owner** | `rahul@example.com` | `Pass@1234` | Skyline 402 Owner, Premium Plan, Marketplace Seller |
-| **Flat Admin** | `joy@example.com` | `Pass@1234` | Skyline 402 Admin, Basic Plus Plan, Marketplace Buyer |
+| **Super Admin** | `admin@nestsync.com` | `Admin@NestSync2026!` | Access to the Creator & Admin Panel, pricing controls, reports, logs |
+| **Flat Owner** | `rahul@example.com` | `Pass@1234` | Skyline 402 Owner, Premium Plan, Active Marketplace Member |
+| **Flat Admin** | `joy@example.com` | `Pass@1234` | Skyline 402 Member, Active Marketplace Member |
 | **Flatmate** | `arjun@example.com` | `Pass@1234` | Skyline 402 Member, Free Plan |
 | **Flatmate** | `priya@example.com` | `Pass@1234` | Skyline 402 Member, Free Plan |

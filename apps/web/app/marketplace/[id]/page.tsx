@@ -142,17 +142,21 @@ export default function ProductDetailPage() {
       router.push("/auth/login");
       return;
     }
+    // Check if buyer has active marketplace membership
+    try {
+      const mktData = await apiRequest("/subscriptions/marketplace-membership");
+      if (!mktData.membership?.has_active_membership) {
+        if (confirm("Marketplace Membership (₹20 for 6 months) is required to purchase items. Would you like to get membership now?")) {
+          router.push("/subscriptions");
+        }
+        return;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     setShowCheckoutModal(true);
     setCheckoutSuccess(null);
-    setFeeLoading(true);
-    try {
-      const preview = await apiRequest(`/marketplace/fee-preview?item_price_paise=${listing.selling_price_paise}`);
-      setFeePreview(preview);
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setFeeLoading(false);
-    }
   };
 
   const handleCompleteProtectedPurchase = async () => {
@@ -590,7 +594,7 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* PROTECTED CHECKOUT & TRANSACTION FEE MODAL */}
+      {/* PROTECTED CHECKOUT & MEMBERSHIP COVERED MODAL */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white max-w-lg w-full rounded-3xl p-6 sm:p-8 shadow-elevated border border-navy/10 animate-scaleUp">
@@ -601,7 +605,7 @@ export default function ProductDetailPage() {
                 </div>
                 <h3 className="text-xl font-extrabold text-navy">Purchase Completed!</h3>
                 <p className="text-xs text-navy-secondary">
-                  Your protected marketplace transaction was successfully verified and recorded. The item has been marked as SOLD.
+                  Your marketplace transaction was successfully verified. The item has been marked as SOLD.
                 </p>
                 <div className="p-4 rounded-2xl bg-cream text-left text-xs space-y-1.5 font-mono">
                   <div className="flex justify-between">
@@ -609,16 +613,12 @@ export default function ProductDetailPage() {
                     <span className="font-bold text-navy">{checkoutSuccess.razorpay_order_id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-mutedblue-dark">Payment ID:</span>
-                    <span className="font-bold text-navy">{checkoutSuccess.razorpay_payment_id}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-mutedblue-dark">Total Item Price:</span>
+                    <span className="text-mutedblue-dark">Item Price:</span>
                     <span className="font-bold text-navy">₹{(checkoutSuccess.item_price_paise / 100).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-mutedblue-dark">Buyer Fee Paid:</span>
-                    <span className="font-bold text-coral">₹{(checkoutSuccess.buyer_fee_paise / 100).toFixed(2)}</span>
+                    <span className="text-mutedblue-dark">Transaction Fee:</span>
+                    <span className="font-bold text-emerald-600">₹0.00 (Covered by Membership)</span>
                   </div>
                   <div className="flex justify-between border-t border-navy/10 pt-1.5">
                     <span className="text-mutedblue-dark">Security Status:</span>
@@ -640,79 +640,55 @@ export default function ProductDetailPage() {
                     <h3 className="font-extrabold text-lg text-navy">Protected Marketplace Checkout</h3>
                   </div>
                   <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">
-                    Test Mode
+                    Membership Covered
                   </span>
                 </div>
 
                 <p className="text-xs text-navy-secondary mb-4">
-                  NestSync protects community transactions. Transparent fee policies apply:
+                  Under your active 6-Month Marketplace Membership, you pay <strong>₹0 buyer fee</strong>.
                 </p>
 
-                {feeLoading ? (
-                  <div className="py-8 flex justify-center">
-                    <div className="w-6 h-6 rounded-full border-2 border-coral border-t-transparent animate-spin"></div>
-                  </div>
-                ) : feePreview ? (
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-2xl bg-cream/60 border border-navy/5 space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-navy-secondary">Item Price:</span>
-                        <span className="font-bold text-navy">₹{(feePreview.item_price_paise / 100).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-navy-secondary">
-                          Marketplace Platform Fee ({feePreview.fee_policy.replace("_", " ")}):
-                        </span>
-                        <span className="font-bold text-coral">
-                          ₹{(feePreview.buyer_fee_paise / 100).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between border-t border-navy/10 pt-2 text-sm font-black text-navy">
-                        <span>Total Payable by Buyer:</span>
-                        <span className="text-coral">₹{(feePreview.total_buyer_amount_paise / 100).toFixed(2)}</span>
-                      </div>
-                      {feePreview.seller_fee_paise > 0 && (
-                        <p className="text-[10px] text-mutedblue-dark pt-1 border-t border-navy/5">
-                          * Seller will contribute ₹{(feePreview.seller_fee_paise / 100).toFixed(2)} platform fee upon payout.
-                        </p>
-                      )}
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl bg-cream/60 border border-navy/5 space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-navy-secondary">Item Price:</span>
+                      <span className="font-bold text-navy">₹{(listing.selling_price_paise / 100).toFixed(2)}</span>
                     </div>
-
-                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-[11px] text-blue-900 flex items-start gap-2">
-                      <Sparkles className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-bold">Simulated Razorpay Sandbox:</span> In development mode, completing checkout simulates cryptographic order creation and HMAC-SHA256 signature verification instantly.
-                      </div>
+                    <div className="flex justify-between">
+                      <span className="text-navy-secondary">Buyer Transaction Fee:</span>
+                      <span className="font-bold text-emerald-600">₹0.00 (Free with Membership)</span>
                     </div>
-
-                    <div className="flex items-center justify-end gap-3 pt-3">
-                      <button
-                        type="button"
-                        onClick={() => setShowCheckoutModal(false)}
-                        className="px-4 py-2.5 rounded-xl text-xs font-semibold text-navy-secondary"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCompleteProtectedPurchase}
-                        disabled={checkingOut}
-                        className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
-                      >
-                        {checkingOut ? (
-                          <>
-                            <div className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
-                            Processing...
-                          </>
-                        ) : (
-                          "Confirm & Pay"
-                        )}
-                      </button>
+                    <div className="flex justify-between border-t border-navy/10 pt-2 text-sm font-black text-navy">
+                      <span>Total Payable:</span>
+                      <span className="text-coral">₹{(listing.selling_price_paise / 100).toFixed(2)}</span>
                     </div>
                   </div>
-                ) : (
-                  <p className="text-xs text-red-500">Failed to calculate fees. Please try again.</p>
-                )}
+
+                  <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-[11px] text-blue-900 flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold">Instant Sandbox Settlement:</span> Completing purchase updates the item status to SOLD and records the transaction securely.
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowCheckoutModal(false)}
+                      className="px-4 py-2.5 rounded-xl text-xs font-semibold text-navy-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCompleteProtectedPurchase}
+                      disabled={checkingOut}
+                      className="px-6 py-2.5 rounded-xl bg-coral hover:bg-coral-hover text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
+                    >
+                      {checkingOut ? "Processing..." : "Confirm & Pay"}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

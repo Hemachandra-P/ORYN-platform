@@ -10,7 +10,8 @@ class Bill(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     household_id = Column(String(36), ForeignKey("households.id"), nullable=False, index=True)
     title = Column(String(255), nullable=False)
-    category = Column(String(50), nullable=False) # electricity, water, internet, rent, maintenance, gas, custom
+    category = Column(String(50), nullable=False) # electricity, internet, water, rent, maintenance, gas, other
+    custom_category = Column(String(100), nullable=True) # Used when category == "other" (e.g. Maid Salary, Security Charges)
     amount_paise = Column(Integer, nullable=False)
     due_date = Column(DateTime, nullable=False)
     paid_by_id = Column(String(36), ForeignKey("users.id"), nullable=True)

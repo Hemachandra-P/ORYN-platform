@@ -9,14 +9,16 @@ class HouseholdTask(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     household_id = Column(String(36), ForeignKey("households.id"), nullable=False, index=True)
+    creator_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     assigned_to_id = Column(String(36), ForeignKey("users.id"), nullable=True)
     due_date = Column(DateTime, nullable=True)
     recurrence = Column(String(50), default="none", nullable=False) # none, daily, weekly, monthly
-    status = Column(String(50), default="todo", nullable=False) # todo, in_progress, completed
+    status = Column(String(50), default="pending", nullable=False) # pending, in_progress, completed
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     completed_at = Column(DateTime, nullable=True)
 
     household = relationship("Household", back_populates="tasks")
-    assigned_to = relationship("User")
+    assigned_to = relationship("User", foreign_keys=[assigned_to_id])
+    creator = relationship("User", foreign_keys=[creator_id])

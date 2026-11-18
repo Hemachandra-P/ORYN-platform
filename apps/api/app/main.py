@@ -3,10 +3,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine, Base, SessionLocal
-import app.models # Ensure all models are imported
+import app.models
 from app.models.user import User
 from app.models.subscription import SubscriptionPlan
 from app.models.admin import PlatformSetting
+from app.models.household import Community
 from app.core.security import get_password_hash
 
 # Routers
@@ -51,10 +52,8 @@ app.include_router(ai.router, prefix=api_v1)
 
 @app.on_event("startup")
 def on_startup():
-    # Create tables
     Base.metadata.create_all(bind=engine)
     
-    # Bootstrap data
     db = SessionLocal()
     try:
         # 1. Bootstrap Super Admin if not present
@@ -70,56 +69,42 @@ def on_startup():
             )
             db.add(super_admin)
 
-        # 2. Bootstrap Subscription Plans
+        # 2. Bootstrap Subscription Plans per Feature 2:
+        # Free Household Plan: ₹0, max 3 members
+        # Premium Household Plan: ₹99 for 6 months, unlimited members
         plans_data = [
             {
                 "id": "free",
-                "name": "Free Community",
+                "name": "Free Household Plan",
                 "price_inr_year": 0,
-                "description": "Essential household budgeting and marketplace access for students and flatmates.",
+                "validity_months": 6,
+                "description": "Essential household budgeting, bills, and task management for up to 3 flatmates.",
                 "features_json": json.dumps([
-                    "1 Active Household",
-                    "Unlimited Shared Expenses & Equal Splits",
+                    "Up to 3 Household Members Total (including Owner)",
+                    "Shared Expenses & Equal Splits",
+                    "Recurring Bills & Reminders",
                     "Shared Shopping Lists & Chores",
-                    "Buy & Sell Marketplace Access",
-                    "Basic In-App Messaging",
-                    "10 AI Assistant Requests / Month"
+                    "Task Assignment to Flatmates",
+                    "Free Marketplace Browsing"
                 ]),
-                "ai_monthly_allowance": 10,
+                "max_members": 3,
                 "max_households": 1
             },
             {
-                "id": "basic_plus",
-                "name": "Basic Plus",
-                "price_inr_year": 49,
-                "description": "Advanced expense reports, custom splits, and recurring bill management.",
-                "features_json": json.dumps([
-                    "Up to 3 Active Households",
-                    "Custom & Percentage Expense Splits",
-                    "Recurring Bill Management & Due Reminders",
-                    "Receipt Attachment & Settlement Verification",
-                    "Exportable PDF/Excel Expense Reports",
-                    "100 AI Assistant Requests / Month",
-                    "Priority Marketplace Badge"
-                ]),
-                "ai_monthly_allowance": 100,
-                "max_households": 3
-            },
-            {
                 "id": "premium",
-                "name": "Premium Lifestyle",
+                "name": "Premium Household Plan",
                 "price_inr_year": 99,
-                "description": "The ultimate household productivity suite with unlimited AI and moving out sale bundles.",
+                "validity_months": 6,
+                "description": "Unlock unlimited flatmates for six months. Flatmates join without paying.",
                 "features_json": json.dumps([
-                    "Unlimited Households",
-                    "Full AI Voice & Text Household Automation",
-                    "Moving Out & Graduation Sale Bundle Collections",
-                    "Featured Marketplace Listings (3x Views)",
-                    "Debt Simplification Algorithm",
-                    "Advanced Multi-Year Analytics & Budget Tracking",
-                    "Unlimited AI Assistant Requests"
+                    "Unlimited Household Members for 6 Months",
+                    "Only Owner Pays ₹99 — Flatmates Join for Free",
+                    "Advanced Custom Splits & Expense Tracking",
+                    "Unlimited Custom Bill Categories",
+                    "Full Task Assignment & Delegation Ledger",
+                    "Priority Community Badge"
                 ]),
-                "ai_monthly_allowance": 99999,
+                "max_members": 9999,
                 "max_households": 999
             }
         ]
@@ -129,18 +114,33 @@ def on_startup():
             if not existing_plan:
                 new_plan = SubscriptionPlan(**p)
                 db.add(new_plan)
+            else:
+                existing_plan.name = p["name"]
+                existing_plan.price_inr_year = p["price_inr_year"]
+                existing_plan.validity_months = p["validity_months"]
+                existing_plan.max_members = p["max_members"]
 
-        # 3. Bootstrap default platform settings
+        # 3. Bootstrap Predefined Communities
+        default_comms = [
+            ("Estancia", "Chennai", "Prime residential township near SRM University"),
+            ("Abode Valley", "Chennai", "Modern gated apartment complex in Potheri"),
+            ("Mini Matrix", "Chennai", "Convenient student and professional flats in Kattankulathur")
+        ]
+        for name, city, desc in default_comms:
+            existing_comm = db.query(Community).filter(Community.name.ilike(name)).first()
+            if not existing_comm:
+                db.add(Community(name=name, city=city, description=desc))
+
+        # 4. Bootstrap default platform settings
         default_settings = [
             ("platform_brand_name", "NestSync", "Consumer platform brand name"),
             ("currency_code", "INR", "Platform default currency"),
             ("currency_symbol", "₹", "Platform currency symbol"),
-            ("moving_out_sales_enabled", "true", "Enable moving out collections"),
-            ("ai_provider_mode", settings.AI_PROVIDER, "Active AI processing engine"),
-            ("payment_gateway_mode", "test_simulation" if settings.RAZORPAY_KEY_ID.startswith("rzp_test_nestsync_mock") else "live", "Razorpay integration mode"),
-            ("marketplace_fee_enabled", "true", "Enable transaction fee on marketplace sales"),
-            ("marketplace_fee_amount_paise", "2000", "Default marketplace platform fee in paise (2000 = ₹20.00)"),
-            ("marketplace_fee_policy", "seller_fee", "Marketplace fee policy: seller_fee, buyer_fee, both_fee, combined_fee")
+            ("marketplace_membership_price_inr", "20", "Marketplace 6-month membership price in ₹ INR"),
+            ("marketplace_membership_validity_months", "6", "Marketplace membership validity in months"),
+            ("free_household_member_limit", "3", "Maximum total members for Free household plan"),
+            ("premium_household_price_inr", "99", "Premium household subscription price in ₹ INR"),
+            ("premium_household_validity_months", "6", "Premium household subscription validity in months")
         ]
         for key, val, desc in default_settings:
             existing_setting = db.query(PlatformSetting).filter(PlatformSetting.key == key).first()

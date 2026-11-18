@@ -20,24 +20,39 @@ def create_bill(
 ):
     require_household_member(household_id, current_user, db)
 
+    # Validate custom category if Other is selected
+    cat = bill_in.category.strip().lower()
+    custom_cat = bill_in.custom_category.strip() if bill_in.custom_category else None
+
+    if cat == "other":
+        if not custom_cat:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Custom Bill Category name is mandatory when 'Other (Custom Bill)' is selected."
+            )
+    else:
+        custom_cat = None
+
     new_bill = Bill(
         household_id=household_id,
-        title=bill_in.title,
-        category=bill_in.category,
+        title=bill_in.title.strip(),
+        category=cat,
+        custom_category=custom_cat,
         amount_paise=bill_in.amount_paise,
         due_date=bill_in.due_date,
-        recurrence=bill_in.recurrence,
+        recurrence=bill_in.recurrence or "none",
         notes=bill_in.notes,
         receipt_url=bill_in.receipt_url,
         is_paid=False
     )
     db.add(new_bill)
 
+    display_cat = custom_cat if cat == "other" else cat.capitalize()
     act = HouseholdActivityLog(
         household_id=household_id,
         user_id=current_user.id,
         action_type="bill_added",
-        description=f"{current_user.full_name} added recurring/upcoming bill '{new_bill.title}' (₹{new_bill.amount_paise/100:.2f})"
+        description=f"{current_user.full_name} added recurring/upcoming bill '{new_bill.title}' ({display_cat} - ₹{new_bill.amount_paise/100:.2f})"
     )
     db.add(act)
 
@@ -69,7 +84,23 @@ def update_bill(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bill not found")
 
     if bill_in.title is not None:
-        bill.title = bill_in.title
+        bill.title = bill_in.title.strip()
+    if bill_in.category is not None:
+        cat = bill_in.category.strip().lower()
+        bill.category = cat
+        if cat == "other":
+            if bill_in.custom_category and bill_in.custom_category.strip():
+                bill.custom_category = bill_in.custom_category.strip()
+            elif not bill.custom_category:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Custom category name is required when category is 'other'"
+                )
+        else:
+            bill.custom_category = None
+    elif bill_in.custom_category is not None and bill.category == "other":
+        bill.custom_category = bill_in.custom_category.strip()
+
     if bill_in.amount_paise is not None:
         bill.amount_paise = bill_in.amount_paise
     if bill_in.due_date is not None:
@@ -111,4 +142,4 @@ def delete_bill(
 
     db.delete(bill)
     db.commit()
-    return {"message": "Bill removed successfully"}
+    return {"message": "Bill deleted successfully"}

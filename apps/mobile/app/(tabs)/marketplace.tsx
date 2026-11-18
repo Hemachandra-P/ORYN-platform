@@ -24,6 +24,12 @@ export default function MobileMarketplaceScreen() {
         />
       </View>
 
+      {/* Membership Banner */}
+      <View style={styles.membershipBanner}>
+        <Text style={styles.membershipTitle}>Marketplace Membership: ₹20 / 6 Months</Text>
+        <Text style={styles.membershipSub}>Browse for free • Unlimited buying & selling for members</Text>
+      </View>
+
       <Text style={styles.heading}>Popular Listings Near Campus</Text>
 
       {items.map((item, idx) => (
@@ -58,6 +64,24 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginBottom: 16,
+  },
+  membershipBanner: {
+    backgroundColor: "#14213D",
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#FF6B5B",
+  },
+  membershipTitle: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "bold",
+  },
+  membershipSub: {
+    color: "#A9B4C3",
+    fontSize: 11,
+    marginTop: 2,
   },
   searchInput: {
     backgroundColor: "#FFFFFF",

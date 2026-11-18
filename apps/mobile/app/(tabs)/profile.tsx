@@ -24,7 +24,7 @@ export default function MobileProfileScreen() {
           <Text style={styles.menuText}>Payment Methods & UPI ID</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuText}>Annual Subscription Details</Text>
+          <Text style={styles.menuText}>Household & Marketplace Subscriptions</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem}>
           <Text style={[styles.menuText, { color: "#FF6B5B" }]}>Sign Out</Text>

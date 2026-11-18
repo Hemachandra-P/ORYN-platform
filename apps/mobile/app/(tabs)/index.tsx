@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } 
 
 export default function HouseholdScreen() {
   const [household, setHousehold] = useState({
-    name: "Skyline Apartments 402",
-    code: "SKYLINE402",
-    address: "Potheri / Kattankulathur, Chennai",
+    name: "Estancia · Tower A · Flat 404",
+    code: "ESTANCIA404",
+    address: "Estancia · Tower A · Flat: 404 (Free Plan: 3/3 members)",
   });
 
   const [balances, setBalances] = useState([
