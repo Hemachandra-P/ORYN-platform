@@ -6,7 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, Menu, X } from "lucide-react";
 import { getStoredUser, removeStoredToken } from "@/lib/api";
-import OrynLogo from "@/components/OrynLogo";
+import VynaLogo from "@/components/VynaLogo";
 
 export default function Navbar() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function Navbar() {
   return (
     <header className={`sticky top-0 z-50 transition-all ${scrolled ? "bg-white/85 backdrop-blur-md border-b border-navy/10" : "border-b border-transparent"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link href="/" aria-label="ORYN home"><OrynLogo size={32} /></Link>
+        <Link href="/" aria-label="Vyna home"><VynaLogo size={32} /></Link>
 
         <nav className="hidden md:flex items-center gap-1" aria-label="Main">
           {links.map((l) => {

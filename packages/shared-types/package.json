@@ -1,7 +1,7 @@
 {
   "name": "@nestsync/shared-types",
   "version": "1.0.0",
-  "description": "Shared TypeScript types for NestSync platform",
+  "description": "Shared TypeScript types for Vyna platform",
   "main": "index.ts",
   "types": "index.ts",
   "license": "MIT"

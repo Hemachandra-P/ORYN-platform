@@ -1,6 +1,6 @@
-# ORYN — Everything Shared. Everything Simple.
+# Vyna — Everything Shared. Everything Simple.
 
-**ORYN** is a production-structured digital platform for flats, apartments, hostels, PGs, shared accommodations, and student households. One connected platform to manage shared living, organize household finances, and discover products within your community.
+**Vyna** is a production-structured digital platform for flats, apartments, hostels, PGs, shared accommodations, and student households. One connected platform to manage shared living, organize household finances, and discover products within your community.
 
 ---
 
@@ -36,7 +36,7 @@ D:\SRM_website/
 
 ## 💎 Consolidated Pricing & Features Architecture
 
-ORYN offers four distinct and clearly defined subscription offerings:
+Vyna offers four distinct and clearly defined subscription offerings:
 
 | Subscription | Price | Duration | Capacity | Primary Scope |
 |---|---:|---|---|---|
@@ -220,7 +220,7 @@ For instant local testing, use the pre-configured accounts:
 
 | Role | Email | Password | Details |
 | :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin@nestsync.com` | `Admin@NestSync2026!` | Access to the Creator & Admin Panel, pricing controls, reports, logs |
+| **Super Admin** | `admin@nestsync.com` | `Admin@Vyna2026!` | Access to the Creator & Admin Panel, pricing controls, reports, logs |
 | **Flat Owner** | `rahul@example.com` | `Pass@1234` | Skyline 402 Owner, Premium Plan, Active Marketplace Member |
 | **Flat Admin** | `joy@example.com` | `Pass@1234` | Skyline 402 Member, Active Marketplace Member |
 | **Flatmate** | `arjun@example.com` | `Pass@1234` | Skyline 402 Member, Free Plan |

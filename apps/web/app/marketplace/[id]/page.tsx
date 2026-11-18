@@ -425,7 +425,7 @@ export default function ProductDetailPage() {
                   Want to know more about this item?
                 </h2>
                 <p className="text-base text-paper/80 max-w-2xl leading-relaxed mb-8">
-                  Get six months of complete ORYN Marketplace access. Unlock full product specifications, seller contacts, verified campus locations, and direct buying & selling privileges.
+                  Get six months of complete Vyna Marketplace access. Unlock full product specifications, seller contacts, verified campus locations, and direct buying & selling privileges.
                 </p>
 
                 {/* 10 Benefits Grid */}

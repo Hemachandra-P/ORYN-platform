@@ -1,5 +1,5 @@
 /**
- * NestSync Shared Type Definitions
+ * Vyna Shared Type Definitions
  * Unified Household Management & Community Marketplace Platform
  */
 

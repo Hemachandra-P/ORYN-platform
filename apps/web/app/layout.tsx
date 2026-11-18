@@ -7,12 +7,12 @@ const body = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-body" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
-  title: "ORYN — Everything Shared. Everything Simple.",
+  title: "Vyna — Everything Shared. Everything Simple.",
   description: "Split expenses, share chores and buy or sell second-hand in your flat, PG or hostel.",
   openGraph: {
-    title: "ORYN — Everything Shared. Everything Simple.",
+    title: "Vyna — Everything Shared. Everything Simple.",
     description: "Split expenses, share chores and buy or sell second-hand in your flat, PG or hostel.",
-    siteName: "ORYN",
+    siteName: "Vyna",
   },
 };
 

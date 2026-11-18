@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import OrynLogo from "@/components/OrynLogo";
+import VynaLogo from "@/components/VynaLogo";
 import { apiRequest, setStoredToken, setStoredUser } from "@/lib/api";
 import { Lock, Mail, ArrowRight, ShieldCheck, User } from "lucide-react";
 
@@ -55,10 +55,10 @@ export default function LoginPage() {
         <div className="max-w-md w-full bg-white rounded-3xl shadow-elevated border border-navy/5 p-8 sm:p-10">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <OrynLogo variant="symbol" size={48} />
+              <VynaLogo variant="symbol" size={48} />
             </div>
-            <h1 className="text-2xl font-bold text-navy">Welcome to ORYN</h1>
-            <p className="text-sm text-navy-secondary mt-1">Sign in to your ORYN account</p>
+            <h1 className="text-2xl font-bold text-navy">Welcome to Vyna</h1>
+            <p className="text-sm text-navy-secondary mt-1">Sign in to your Vyna account</p>
           </div>
 
           {error && (

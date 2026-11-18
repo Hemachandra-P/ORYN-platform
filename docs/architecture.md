@@ -1,8 +1,8 @@
-# NestSync Platform Architecture & Database Schema
+# Vyna Platform Architecture & Database Schema
 
 ## 1. System Architecture Overview
 
-NestSync is structured as a monorepo containing three core applications:
+Vyna is structured as a monorepo containing three core applications:
 
 1. **`apps/api`**: FastAPI Python backend with SQLAlchemy ORM, Pydantic v2 data contracts, and JWT authentication.
 2. **`apps/web`**: Next.js 14 App Router frontend with Tailwind CSS, TypeScript, Framer Motion, and Lucide icons.

@@ -158,7 +158,7 @@ def on_startup():
 
         # 4. Bootstrap default platform settings
         default_settings = [
-            ("platform_brand_name", "ORYN", "Consumer platform brand name"),
+            ("platform_brand_name", "Vyna", "Consumer platform brand name"),
             ("currency_code", "INR", "Platform default currency"),
             ("currency_symbol", "₹", "Platform currency symbol"),
             ("marketplace_membership_price_inr", "20", "Marketplace 6-month membership price in ₹ INR"),
@@ -171,8 +171,8 @@ def on_startup():
             existing_setting = db.query(PlatformSetting).filter(PlatformSetting.key == key).first()
             if not existing_setting:
                 db.add(PlatformSetting(key=key, value=val, description=desc))
-            elif key == "platform_brand_name" and existing_setting.value == "NestSync":
-                existing_setting.value = "ORYN"
+            elif key == "platform_brand_name" and existing_setting.value in ("NestSync", "ORYN"):
+                existing_setting.value = "Vyna"
 
         db.commit()
     finally:

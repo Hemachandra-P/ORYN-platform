@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, Receipt, ListChecks, Store } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import OrynLogo from "@/components/OrynLogo";
+import VynaLogo from "@/components/VynaLogo";
 import Reveal from "@/components/Reveal";
 import { apiRequest, getStoredToken } from "@/lib/api";
 
@@ -289,7 +289,7 @@ export default function LandingPage() {
       <footer className="mt-auto border-t border-navy/10 bg-white px-4 sm:px-6 lg:px-8 py-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 md:items-start justify-between">
           <div>
-            <OrynLogo size={30} />
+            <VynaLogo size={30} />
             <p className="mt-3 text-sm text-mist-dark max-w-xs">Everything shared. Everything simple.</p>
           </div>
           <div className="grid grid-cols-2 gap-x-16 gap-y-2 text-sm">
@@ -301,7 +301,7 @@ export default function LandingPage() {
             <Link href="/auth/login" className="text-navy-secondary hover:text-coral">Sign in</Link>
           </div>
         </div>
-        <p className="max-w-7xl mx-auto mt-8 text-xs text-mist-dark">© 2026 ORYN</p>
+        <p className="max-w-7xl mx-auto mt-8 text-xs text-mist-dark">© 2026 Vyna</p>
       </footer>
     </div>
   );

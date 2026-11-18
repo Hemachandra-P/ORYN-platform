@@ -2,7 +2,7 @@
 
 import React from "react";
 
-interface OrynLogoProps {
+interface VynaLogoProps {
   variant?: "horizontal" | "symbol" | "icon";
   theme?: "dark" | "light" | "coral";
   size?: number;
@@ -11,7 +11,7 @@ interface OrynLogoProps {
 }
 
 /** Mark: an "O" ring (the flat) with a dot sitting on it (the person sharing it). */
-export default function OrynLogo({ variant = "horizontal", theme = "light", size = 34, className = "", showTagline = false }: OrynLogoProps) {
+export default function VynaLogo({ variant = "horizontal", theme = "light", size = 34, className = "", showTagline = false }: VynaLogoProps) {
   const onDark = theme === "dark";
   const word = onDark ? "#FFFFFF" : "#14213D";
 
@@ -29,7 +29,7 @@ export default function OrynLogo({ variant = "horizontal", theme = "light", size
     <div className={`inline-flex items-center gap-2.5 ${className}`}>
       {Mark}
       <div className="flex flex-col leading-none">
-        <span style={{ color: word, fontSize: size * 0.58 }} className="font-display font-extrabold tracking-[0.14em]">ORYN</span>
+        <span style={{ color: word, fontSize: size * 0.58 }} className="font-display font-extrabold tracking-[0.14em]">VYNA</span>
         {showTagline && <span className="text-[10px] text-mist-dark mt-1 tracking-wide">Everything shared. Everything simple.</span>}
       </div>
     </div>
